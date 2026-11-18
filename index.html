@@ -12,8 +12,8 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Outfit:wght@300;400;600;800&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="img/lampe-livre-coran-700.webp" media="(max-width:700px)">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="preload" as="image" href="img/lampe-livre-coran-700.webp"><link rel="preconnect" href="https://rvreusugrtiubqtafgbk.supabase.co" crossorigin>
+<link rel="stylesheet" href="style.css?v=3">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Store","name":"Perfect Room","description":"Fabricant de luminaires à Tlemcen","telephone":"+213561122911","address":{"@type":"PostalAddress","addressLocality":"Tlemcen","postalCode":"13000","addressCountry":"DZ"},"geo":{"@type":"GeoCoordinates","latitude":34.8849688,"longitude":-1.3256298},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday"],"opens":"09:00","closes":"20:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue":"5","reviewCount":"2"}}
 </script>
@@ -31,92 +31,52 @@
 <header class="nav" id="nav">
   <a href="#top" class="brand" aria-label="Perfect Room — accueil"><span class="brand-p">Perfect</span><span class="brand-r">Room</span></a>
   <nav class="links">
-    <a href="#atelier">L'atelier</a><a href="#galerie">Créations</a><a href="#horaires">Horaires</a><a href="#contact">Contact</a>
+    <a href="#creations">Créations</a><a href="#atelier">L'atelier</a><a href="#galerie">Galerie</a><a href="#horaires">Horaires</a><a href="#contact">Contact</a>
   </nav>
-  <a class="nav-call" href="tel:+213561122911">Appeler</a>
+  <a class="nav-call" data-tel href="tel:+213561122911">Appeler</a>
 </header>
 
 <main id="top">
-<section class="hero">
-  <div class="hero-text">
-    <p class="kicker reveal"><span class="dot"></span> Fabricant de luminaires · Tlemcen</p>
-    <h1 class="neon-title reveal" aria-label="Perfect Room">
-      <span class="t1">Perfect</span>
-      <span class="t2">R<span class="flk">o</span>om</span>
-    </h1>
-    <p class="lead reveal">Des créations lumineuses qui donnent à chaque pièce une ambiance douce, chaleureuse… parfaite.</p>
-    <div class="rating reveal">
-      <span class="stars" aria-hidden="true">★★★★★</span>
-      <span><strong>5,0</strong> sur Google · 2 avis</span>
-    </div>
-    <div class="cta reveal">
-      <a class="btn btn-glow" href="tel:+213561122911"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>0561 12 29 11</a>
-      <a class="btn btn-ghost" href="#galerie">Voir les créations</a>
+<section class="hero hero-compact">
+  <p class="kicker reveal"><span class="dot"></span> <span id="kicker">Fabricant de luminaires · Tlemcen</span></p>
+  <h1 class="neon-title reveal" aria-label="Perfect Room"><span class="t1">Perfect</span> <span class="t2">R<span class="flk">o</span>om</span></h1>
+  <p class="lead reveal" id="lead">Des créations lumineuses qui donnent à chaque pièce une ambiance douce, chaleureuse… parfaite.</p>
+  <div class="hero-row reveal">
+    <div class="rating"><span class="stars" aria-hidden="true">★★★★★</span><span><strong>5,0</strong> sur Google · 2 avis</span></div>
+    <div class="cta">
+      <a class="btn btn-glow" data-tel href="tel:+213561122911"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg><span data-tel-text>0561 12 29 11</span></a>
+      <a class="btn btn-wa" data-wa href="https://wa.me/213561122911" target="_blank" rel="noopener">💬 WhatsApp</a>
     </div>
   </div>
-  <div class="hero-art reveal">
-    <div class="frame">
-      <picture>
-        <source media="(max-width:700px)" srcset="img/lampe-livre-coran-700.webp">
-        <img src="img/lampe-livre-coran-1400.webp" alt="Lampe lumineuse en forme de livre ouvert gravé de versets, lumière ambrée, création Perfect Room" width="1400" height="935" fetchpriority="high">
-      </picture>
-    </div>
-    <div class="float-chip c1">✦ Lumière ambrée</div>
-    <div class="float-chip c2">✦ Gravure fine</div>
-  </div>
-  <a href="#atelier" class="scroll-hint" aria-label="Défiler"><span></span></a>
 </section>
 
-<section class="stats">
-  <div class="stat reveal"><b class="count" data-to="5" data-dec="1">0</b><span>Note Google</span></div>
-  <div class="stat reveal"><b class="count" data-to="6">0</b><span>Jours d'ouverture / 7</span></div>
-  <div class="stat reveal"><b class="count" data-to="11">0</b><span>Heures par jour</span></div>
-  <div class="stat reveal"><b>9h<small>→</small>20h</b><span>Horaires</span></div>
+<section class="section products-sec" id="creations">
+  <h2 class="h2 reveal"><span class="neon-amber" id="productsTitle">Nos créations</span></h2>
+  <p class="intro reveal" id="productsIntro">Photos réelles de nos créations. Prix et modèles sur demande : appelez ou écrivez-nous.</p>
+  <div class="products" id="products"></div>
 </section>
 
 <section class="section" id="atelier">
   <h2 class="h2 reveal"><span class="neon-pink">L'atelier</span> de la lumière</h2>
-  <p class="intro reveal">À Tlemcen, Perfect Room fabrique des luminaires décoratifs : des lampes à plaque gravée posées sur un socle lumineux et des tableaux rétroéclairés. Une lumière douce pour une chambre, un salon, un bureau… ou pour faire plaisir.</p>
+  <p class="intro reveal" id="aboutIntro">À Tlemcen, Perfect Room fabrique des luminaires décoratifs : des lampes à plaque gravée posées sur un socle lumineux et des tableaux rétroéclairés. Une lumière douce pour une chambre, un salon, un bureau… ou pour faire plaisir.</p>
   <div class="cards">
-    <article class="card reveal">
-      <div class="ico">◐</div>
-      <h3>Lampes gravées</h3>
-      <p>Un motif finement gravé qui s'illumine sur son socle : lettres, dessins, formes découpées.</p>
-    </article>
-    <article class="card reveal">
-      <div class="ico">▣</div>
-      <h3>Tableaux lumineux</h3>
-      <p>Des visuels éclatants, mis en lumière pour habiller un mur et créer une vraie ambiance.</p>
-    </article>
-    <article class="card reveal">
-      <div class="ico">❤</div>
-      <h3>Idées cadeaux</h3>
-      <p>Un diplôme, un prénom, un souvenir… Appelez pour parler de votre idée de création.</p>
-    </article>
+    <article class="card reveal"><div class="ico">◐</div><h3>Lampes gravées</h3><p>Un motif finement gravé qui s'illumine sur son socle : lettres, dessins, formes découpées.</p></article>
+    <article class="card reveal"><div class="ico">▣</div><h3>Tableaux lumineux</h3><p>Des visuels éclatants, mis en lumière pour habiller un mur et créer une vraie ambiance.</p></article>
+    <article class="card reveal"><div class="ico">❤</div><h3>Idées cadeaux</h3><p>Un diplôme, un prénom, un souvenir… Appelez pour parler de votre idée de création.</p></article>
   </div>
 </section>
 
 <section class="section" id="galerie">
-  <h2 class="h2 reveal"><span class="neon-amber">Nos</span> créations</h2>
-  <p class="intro reveal">Photos réelles de l'atelier, publiées sur la fiche Google de Perfect Room.</p>
-  <div class="gallery">
-    <figure class="g g-wide reveal" data-full="img/lampe-livre-coran-1400.webp">
-      <img loading="lazy" src="img/lampe-livre-coran-700.webp" alt="Lampe livre ouvert gravé, lumière ambrée" width="700" height="467">
-      <figcaption>Livre gravé · lumière ambrée</figcaption>
-    </figure>
-    <figure class="g reveal" data-full="img/tableau-lumineux-liberte-1400.webp">
-      <img loading="lazy" src="img/tableau-lumineux-liberte-700.webp" alt="Tableau lumineux pop art Statue de la Liberté" width="467" height="700">
-      <figcaption>Tableau lumineux pop art</figcaption>
-    </figure>
-    <figure class="g reveal" data-full="img/lampe-diplome-sara-1400.webp">
-      <img loading="lazy" src="img/lampe-diplome-sara-700.webp" alt="Lampe gravée diplôme et toque avec le prénom Sara" width="525" height="700">
-      <figcaption>Diplôme personnalisé « Sara »</figcaption>
-    </figure>
-    <figure class="g reveal" data-full="img/lampe-voiture-rouge-1400.webp">
-      <img loading="lazy" src="img/lampe-voiture-rouge-700.webp" alt="Lampe gravée voiture de course, lumière rouge" width="525" height="700">
-      <figcaption>Voiture de course · néon rouge</figcaption>
-    </figure>
-  </div>
+  <h2 class="h2 reveal"><span class="neon-amber">La</span> galerie</h2>
+  <p class="intro reveal">Touchez une photo pour l'ouvrir en grand, puis glissez à gauche ou à droite.</p>
+  <div class="gallery" id="gallery"></div>
+</section>
+
+<section class="stats">
+  <div class="stat reveal"><b class="count" data-to="5" data-dec="1">0</b><span>Note Google</span></div>
+  <div class="stat reveal"><b class="count" data-to="2">0</b><span>Avis Google</span></div>
+  <div class="stat reveal"><b class="count" id="daysOpen" data-to="6">0</b><span>Jours d'ouverture / 7</span></div>
+  <div class="stat reveal"><b id="hoursRange">9h<small>→</small>20h</b><span>Horaires</span></div>
 </section>
 
 <section class="section" id="avis">
@@ -134,15 +94,7 @@
   <h2 class="h2 reveal"><span class="neon-cyan">Horaires</span></h2>
   <div class="hours-wrap reveal">
     <div class="live" id="live"><span class="pulse"></span><span id="liveTxt">Horaires</span></div>
-    <ul class="hours" id="hours">
-      <li data-d="6"><span>Samedi</span><span>09:00 – 20:00</span></li>
-      <li data-d="0"><span>Dimanche</span><span>09:00 – 20:00</span></li>
-      <li data-d="1"><span>Lundi</span><span>09:00 – 20:00</span></li>
-      <li data-d="2"><span>Mardi</span><span>09:00 – 20:00</span></li>
-      <li data-d="3"><span>Mercredi</span><span>09:00 – 20:00</span></li>
-      <li data-d="4"><span>Jeudi</span><span>09:00 – 20:00</span></li>
-      <li data-d="5" class="off"><span>Vendredi</span><span>Fermé</span></li>
-    </ul>
+    <ul class="hours" id="hours"></ul>
   </div>
 </section>
 
@@ -157,8 +109,8 @@
       <p class="muted">Fabricant de luminaires</p>
       <p>📍 Tlemcen 13000<br><span class="muted">Plus code : VMMF+XP Tlemcen</span></p>
       <div class="contact-btns">
-        <a class="btn btn-glow" href="tel:+213561122911">📞 Appeler · 0561 12 29 11</a>
-        <a class="btn btn-wa" href="https://wa.me/213561122911" target="_blank" rel="noopener">💬 WhatsApp</a>
+        <a class="btn btn-glow" data-tel href="tel:+213561122911">📞 Appeler · <span data-tel-text>0561 12 29 11</span></a>
+        <a class="btn btn-wa" data-wa href="https://wa.me/213561122911" target="_blank" rel="noopener">💬 WhatsApp</a>
         <a class="btn btn-ghost" href="https://www.google.com/maps/dir/?api=1&destination=34.8849688,-1.3256298" target="_blank" rel="noopener">🧭 Itinéraire</a>
       </div>
     </div>
@@ -171,9 +123,15 @@
   <p>Créations lumineuses · Tlemcen · © <span id="y"></span></p>
 </footer>
 
-<a class="sticky-call" href="tel:+213561122911" aria-label="Appeler Perfect Room"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg><span>Appeler</span></a>
+<a class="sticky-call" data-tel href="tel:+213561122911" aria-label="Appeler Perfect Room"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg><span>Appeler</span></a>
 
-<div class="lightbox" id="lb" hidden><button aria-label="Fermer">×</button><img alt=""></div>
-<script src="main.js?v=1" defer></script>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photos en grand">
+  <div class="lb-track" id="lbTrack"></div>
+  <div class="lb-top"><span class="lb-count" id="lbCount">1 / 1</span><button class="lb-close" id="lbClose" aria-label="Fermer">✕</button></div>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Photo précédente">‹</button>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Photo suivante">›</button>
+  <p class="lb-cap" id="lbCap"></p>
+</div>
+<script src="main.js?v=3" defer></script>
 </body>
 </html>

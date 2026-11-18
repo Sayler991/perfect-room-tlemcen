@@ -1,0 +1,117 @@
+{
+ "phone": "0561 12 29 11",
+ "whatsapp": "213561122911",
+ "kicker": "Fabricant de luminaires · Tlemcen",
+ "lead": "Des créations lumineuses qui donnent à chaque pièce une ambiance douce, chaleureuse… parfaite.",
+ "products_title": "Nos créations",
+ "products_intro": "Photos réelles de nos créations. Prix et modèles sur demande : appelez ou écrivez-nous.",
+ "about_intro": "À Tlemcen, Perfect Room fabrique des luminaires décoratifs : des lampes à plaque gravée posées sur un socle lumineux et des tableaux rétroéclairés. Une lumière douce pour une chambre, un salon, un bureau… ou pour faire plaisir.",
+ "hours": [
+  {
+   "dow": 6,
+   "closed": false,
+   "open": "09:00",
+   "close": "20:00"
+  },
+  {
+   "dow": 0,
+   "closed": false,
+   "open": "09:00",
+   "close": "20:00"
+  },
+  {
+   "dow": 1,
+   "closed": false,
+   "open": "09:00",
+   "close": "20:00"
+  },
+  {
+   "dow": 2,
+   "closed": false,
+   "open": "09:00",
+   "close": "20:00"
+  },
+  {
+   "dow": 3,
+   "closed": false,
+   "open": "09:00",
+   "close": "20:00"
+  },
+  {
+   "dow": 4,
+   "closed": false,
+   "open": "09:00",
+   "close": "20:00"
+  },
+  {
+   "dow": 5,
+   "closed": true,
+   "open": "09:00",
+   "close": "20:00"
+  }
+ ],
+ "products": [
+  {
+   "id": "p1",
+   "name": "Lampe livre gravé",
+   "photo": "img/lampe-livre-coran-1400.webp",
+   "thumb": "img/lampe-livre-coran-700.webp",
+   "price": "",
+   "description": "Livre ouvert gravé de versets, lumière ambrée sur socle lumineux.",
+   "visible": true
+  },
+  {
+   "id": "p2",
+   "name": "Tableau lumineux pop art",
+   "photo": "img/tableau-lumineux-liberte-1400.webp",
+   "thumb": "img/tableau-lumineux-liberte-700.webp",
+   "price": "",
+   "description": "Tableau rétroéclairé aux couleurs pop art.",
+   "visible": true
+  },
+  {
+   "id": "p3",
+   "name": "Lampe diplôme personnalisée",
+   "photo": "img/lampe-diplome-sara-1400.webp",
+   "thumb": "img/lampe-diplome-sara-700.webp",
+   "price": "",
+   "description": "Toque et diplôme gravés avec un prénom : une idée cadeau.",
+   "visible": true
+  },
+  {
+   "id": "p4",
+   "name": "Lampe voiture de course",
+   "photo": "img/lampe-voiture-rouge-1400.webp",
+   "thumb": "img/lampe-voiture-rouge-700.webp",
+   "price": "",
+   "description": "Voiture de course gravée, lumière rouge.",
+   "visible": true
+  }
+ ],
+ "gallery": [
+  {
+   "id": "g1",
+   "photo": "img/lampe-livre-coran-1400.webp",
+   "thumb": "img/lampe-livre-coran-700.webp",
+   "caption": "Livre gravé · lumière ambrée"
+  },
+  {
+   "id": "g2",
+   "photo": "img/tableau-lumineux-liberte-1400.webp",
+   "thumb": "img/tableau-lumineux-liberte-700.webp",
+   "caption": "Tableau lumineux pop art"
+  },
+  {
+   "id": "g3",
+   "photo": "img/lampe-diplome-sara-1400.webp",
+   "thumb": "img/lampe-diplome-sara-700.webp",
+   "caption": "Diplôme personnalisé « Sara »"
+  },
+  {
+   "id": "g4",
+   "photo": "img/lampe-voiture-rouge-1400.webp",
+   "thumb": "img/lampe-voiture-rouge-700.webp",
+   "caption": "Voiture de course · néon rouge"
+  }
+ ]
+}
