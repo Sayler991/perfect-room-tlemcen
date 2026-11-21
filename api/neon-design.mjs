@@ -99,7 +99,7 @@ function buildFallbackDesign(rawPrompt) {
     fontStyle = 'bold';
   }
 
-  let icon = 'sparkle';
+  let icon = 'none';
   if (/\b(c[oœ]ur|love|amour|mariage|couple)\b/.test(low)) icon = 'heart';
   else if (/\b(reine|roi|queen|king|couronne)\b/.test(low)) icon = 'crown';
   else if (/(?:^|[^a-zA-ZÀ-ÿ])(caf[eé]|coffee|th[eé]|tasse|barista)(?![a-zA-ZÀ-ÿ])/.test(low)) icon = 'coffee';
@@ -109,7 +109,7 @@ function buildFallbackDesign(rawPrompt) {
   else if (/\b(dipl[oô]me|bac|master|licence|graduation)\b/.test(low)) icon = 'grad';
   else if (/\b(coran|livre|verset|islam|ramadan)\b/.test(low)) icon = 'book';
   else if (/\b([eé]clair|bolt|energie|gym)\b/.test(low)) icon = 'bolt';
-  else if (/\b(fleur|rose|tulipe)\b/.test(low)) icon = 'flower';
+  else if (/\b(fleur|tulipe)\b/.test(low)) icon = 'flower';
   else if (/\b(musique|note|studio|dj)\b/.test(low)) icon = 'music';
   else if (/\b([eé]toile|star)\b/.test(low)) icon = 'star';
 

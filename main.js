@@ -157,6 +157,15 @@ const SWATCHES=[
 let lastDesign=null,busy=false;
 const safeHex=(h,f)=>/^#[0-9a-fA-F]{6}$/.test(String(h||''))?String(h):f;
 const hexRgba=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
+const mixHex=(a,b,t)=>{const n=h=>{const x=parseInt(h.slice(1),16);return [x>>16&255,x>>8&255,x&255]};const A=n(a),B=n(b);return '#'+[0,1,2].map(i=>Math.round(A[i]+(B[i]-A[i])*t).toString(16).padStart(2,'0')).join('')};
+function applyStageColors(el,p,s){
+  if(!el)return;
+  el.style.setProperty('--n-p',p);
+  el.style.setProperty('--n-s',s);
+  el.style.setProperty('--n-core',mixHex('#ffffff',p,.12));
+  el.style.setProperty('--n-spill',hexRgba(p,.6));
+  el.style.setProperty('--n-wash',hexRgba(mixHex(p,'#6d7cff',.34),.52));
+}
 
 function localFallback(raw){
   const q=String(raw||'').replace(/\s+/g,' ').trim().slice(0,240);
@@ -180,7 +189,7 @@ function localFallback(raw){
   else if(/(?:^|[^a-zA-ZÀ-ÿ])(r[eé]tro|vintage|80|disco|bar|caf[eé])(?![a-zA-ZÀ-ÿ])/.test(low))fontStyle='retro';
   else if(/\b(gaming|sport|fort|bold|boutique|salon|logo)\b/.test(low))fontStyle='bold';
 
-  let icon='sparkle';
+  let icon='none';
   if(/\b(c[oœ]ur|love|amour|mariage|couple)\b/.test(low))icon='heart';
   else if(/\b(reine|roi|queen|king|couronne)\b/.test(low))icon='crown';
   else if(/(?:^|[^a-zA-ZÀ-ÿ])(caf[eé]|coffee|th[eé]|tasse)(?![a-zA-ZÀ-ÿ])/.test(low))icon='coffee';
@@ -231,16 +240,25 @@ function renderDesign(d){
   const phoneTxt=(DATA&&DATA.phone)||'0561 12 29 11';
   const waMsg=encodeURIComponent(d.whatsappSummary||`Bonjour Perfect Room, je souhaite un devis pour : ${d.neonText} (${d.primaryColorName})`);
   const waUrl=wa?`https://wa.me/${wa}?text=${waMsg}`:th;
+  const txt=esc(d.neonText);
+  const cable='<svg class="neon-cable" viewBox="0 0 28 26" width="28" height="26" aria-hidden="true"><path d="M8 0 C8 10 4 14 6 20 C7 24 12 24 11 26" fill="none" stroke="#161616" stroke-width="2.4" stroke-linecap="round"/><path d="M7.3 0 C7.3 10 3.3 14 5.3 20 C6.3 24 11.3 24 10.3 26" fill="none" stroke="rgba(255,255,255,.22)" stroke-width=".55" stroke-linecap="round"/></svg>';
 
   resEl.hidden=false;
   resEl.innerHTML=`
     <div class="neon-card">
-      <div class="neon-stage ${d.glowIntensity==='intense'?'intense':''}" style="--n-p:${pCol};--n-s:${sCol};--n-glow-bg:${hexRgba(pCol,.24)}">
+      <div class="neon-stage ${d.glowIntensity==='intense'?'intense':''} ignite">
+        <div class="neon-room" aria-hidden="true"><span class="neon-window"></span><span class="neon-fairy"></span></div>
         <span class="neon-stage-tag">${esc(d.productTypeLabel)}</span>
         <div class="neon-board ${typeCls} ${layoutCls}">
           ${d.productType!=='lampe_socle'?'<span class="neon-standoff st-tl" aria-hidden="true"></span><span class="neon-standoff st-tr" aria-hidden="true"></span><span class="neon-standoff st-bl" aria-hidden="true"></span><span class="neon-standoff st-br" aria-hidden="true"></span>':''}
           ${icoPath?`<svg class="neon-svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icoPath}</svg>`:''}
-          <span class="neon-sign-txt ${fontCls}">${esc(d.neonText)}</span>
+          <span class="neon-sign ${fontCls}">
+            <span class="neon-sign-bloom" aria-hidden="true">${txt}</span>
+            <span class="neon-sign-halo" aria-hidden="true">${txt}</span>
+            <span class="neon-sign-tube" aria-hidden="true">${txt}</span>
+            <span class="neon-sign-core">${txt}</span>
+          </span>
+          ${d.productType!=='lampe_socle'?cable:''}
         </div>
         ${d.productType==='lampe_socle'?'<div class="neon-pedestal" aria-hidden="true"></div>':''}
         <div class="neon-swatches" role="group" aria-label="Tester une autre couleur">
@@ -252,10 +270,10 @@ function renderDesign(d){
       <div class="neon-info">
         <div>
           <h3>${esc(d.title)}</h3>
-          <p class="neon-sub-line">${esc(d.subtitle)}</p>
+          <p class="neon-sub-line" id="neonSubLine">${esc(d.subtitle)}</p>
         </div>
         <div class="neon-meta">
-          <div class="neon-meta-item"><small>Couleur</small><strong><span class="clr-pill" style="background:${pCol};box-shadow:0 0 8px ${pCol}"></span>${esc(d.primaryColorName)}</strong></div>
+          <div class="neon-meta-item"><small>Couleur</small><strong><span class="clr-pill" id="neonClrPill" style="background:${pCol};box-shadow:0 0 8px ${pCol}"></span><span id="neonClrName">${esc(d.primaryColorName)}</span></strong></div>
           <div class="neon-meta-item"><small>Format estimé</small><strong>${esc(d.dimensionsCm)}</strong></div>
           <div class="neon-meta-item"><small>Style</small><strong>${esc(FONT_LABEL[d.fontStyle]||'Moderne')}</strong></div>
           <div class="neon-meta-item"><small>Support</small><strong>${esc(d.backingShape)}</strong></div>
@@ -263,25 +281,35 @@ function renderDesign(d){
         <p class="neon-notes">${esc(d.designNotes)}</p>
         <p class="neon-tip">💡 ${esc(d.placementTip)}</p>
         <div class="neon-ctas">
-          <a class="btn btn-glow" href="${waUrl}" ${wa?'target="_blank" rel="noopener"':''}>💬 Demander un devis</a>
+          <a class="btn btn-glow" id="neonWaBtn" href="${waUrl}" ${wa?'target="_blank" rel="noopener"':''}>💬 Demander un devis</a>
           <a class="btn btn-ghost" href="${th}">📞 ${esc(phoneTxt)}</a>
         </div>
         <p class="neon-quote-note">Fabrication sur mesure à Tlemcen · Prix exact sur devis</p>
       </div>
     </div>`;
 
+  applyStageColors(resEl.querySelector('.neon-stage'),pCol,sCol);
   if(!reduce&&resEl.getBoundingClientRect().top>innerHeight*0.72)resEl.scrollIntoView({behavior:'smooth',block:'nearest'});
   resEl.querySelectorAll('[data-sw]').forEach(dot=>{
     dot.addEventListener('click',()=>{
       if(!lastDesign)return;
-      const updated=Object.assign({},lastDesign,{
-        primaryColor:dot.dataset.sw,
-        secondaryColor:dot.dataset.sec,
-        primaryColorName:dot.dataset.name,
-        subtitle:`${lastDesign.productTypeLabel} · ${dot.dataset.name}`,
-        whatsappSummary:`Bonjour Perfect Room, je souhaite un devis pour ce design : ${lastDesign.productTypeLabel} « ${lastDesign.neonText} » (${dot.dataset.name}, style ${FONT_LABEL[lastDesign.fontStyle]||lastDesign.fontStyle}, env. ${lastDesign.dimensionsCm}).`
+      const p=dot.dataset.sw,sec=dot.dataset.sec,name=dot.dataset.name;
+      lastDesign=Object.assign({},lastDesign,{
+        primaryColor:p,secondaryColor:sec,primaryColorName:name,
+        subtitle:`${lastDesign.productTypeLabel} · ${name}`,
+        whatsappSummary:`Bonjour Perfect Room, je souhaite un devis pour ce design : ${lastDesign.productTypeLabel} « ${lastDesign.neonText} » (${name}, style ${FONT_LABEL[lastDesign.fontStyle]||lastDesign.fontStyle}, env. ${lastDesign.dimensionsCm}).`
       });
-      renderDesign(updated);
+      const stage=resEl.querySelector('.neon-stage');
+      if(stage){stage.classList.remove('ignite');applyStageColors(stage,p,sec)}
+      resEl.querySelectorAll('.sw-dot').forEach(d=>d.classList.toggle('on',d===dot));
+      const sub=$('#neonSubLine');if(sub)sub.textContent=lastDesign.subtitle;
+      const nm=$('#neonClrName');if(nm)nm.textContent=name;
+      const pill=$('#neonClrPill');if(pill){pill.style.background=p;pill.style.boxShadow='0 0 8px '+p}
+      const waBtn=$('#neonWaBtn');
+      if(waBtn){
+        const w=String((DATA&&DATA.whatsapp)||'213561122911').replace(/\D/g,'');
+        if(w)waBtn.href='https://wa.me/'+w+'?text='+encodeURIComponent(lastDesign.whatsappSummary);
+      }
     });
   });
 }

@@ -414,78 +414,185 @@ html.lb-open{overflow:hidden}
 .neon-card{display:grid;gap:16px}
 @media(min-width:820px){.neon-card{grid-template-columns:1.08fr .92fr;gap:22px;align-items:stretch}}
 
-/* Mur sombre & rendu tube néon */
+/* Mur sombre & rendu tube néon réaliste */
 .neon-stage{
+  --n-p:#ff5fb8;--n-s:#7a8cff;--n-spill:rgba(255,95,184,.55);--n-wash:rgba(109,124,255,.42);--n-core:#fff8fb;
   position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:245px;padding:28px 18px 22px;border-radius:18px;overflow:hidden;
+  min-height:290px;padding:40px 16px 26px;border-radius:18px;overflow:hidden;
   background:
-    radial-gradient(circle at 50% 48%,var(--n-glow-bg,rgba(255,233,74,.22)),transparent 64%),
-    repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 28px),
-    repeating-linear-gradient(90deg,rgba(255,255,255,.014) 0 1px,transparent 1px 44px),
-    linear-gradient(180deg,#120b20 0%,#080510 100%);
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:inset 0 0 48px rgba(0,0,0,.7);
+    radial-gradient(ellipse 95% 80% at 50% 46%,var(--n-wash),transparent 70%),
+    radial-gradient(ellipse 58% 52% at 50% 48%,var(--n-spill),transparent 72%),
+    linear-gradient(180deg,#4a4347 0%,#322e32 46%,#1d1a1c 100%);
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.38);
+}
+.neon-stage::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 50% 42%,transparent 28%,rgba(0,0,0,.48) 100%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 7px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.012) 0 1px,transparent 1px 9px);
+}
+.neon-room{position:absolute;inset:0;pointer-events:none;z-index:0}
+.neon-window{
+  position:absolute;right:7%;top:11%;width:15%;min-width:40px;max-width:78px;height:36%;
+  border-radius:3px;border:3px solid rgba(62,52,54,.7);
+  background:linear-gradient(180deg,#1c2533 0%,#10151f 100%);
+  box-shadow:0 0 28px rgba(150,170,210,.1),inset 0 0 16px rgba(90,110,150,.18);
+  opacity:.5;
+}
+.neon-window::after{
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(rgba(70,60,62,.55),rgba(70,60,62,.55)) center/100% 2px no-repeat,
+    linear-gradient(rgba(70,60,62,.55),rgba(70,60,62,.55)) center/2px 100% no-repeat;
+}
+.neon-fairy{
+  position:absolute;left:9%;top:13%;width:3px;height:3px;border-radius:50%;
+  background:#ffe7c2;opacity:.4;
+  box-shadow:
+    0 0 5px 1px rgba(255,220,160,.45),
+    26px 7px 0 0 #ffe7c2,26px 7px 5px 1px rgba(255,220,160,.35),
+    48px 2px 0 0 #ffe7c2,48px 2px 5px 1px rgba(255,220,160,.3),
+    14px 16px 0 0 #ffe7c2,14px 16px 5px 1px rgba(255,220,160,.28),
+    38px 20px 0 0 #ffe7c2,38px 20px 5px 1px rgba(255,220,160,.25);
 }
 .neon-stage-tag{
-  position:absolute;top:10px;left:12px;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
-  color:rgba(255,247,210,.78);background:rgba(11,7,20,.68);padding:.22rem .58rem;border-radius:999px;
-  border:1px solid rgba(255,255,255,.12);
+  position:absolute;top:10px;left:12px;z-index:3;font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,247,210,.72);background:rgba(11,7,20,.55);padding:.2rem .55rem;border-radius:999px;
+  border:1px solid rgba(255,255,255,.1);
 }
 .neon-board{
-  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-  max-width:100%;padding:22px 26px;border-radius:16px;
-  background:rgba(255,255,255,.035);
-  border:1.5px solid rgba(255,255,255,.16);
-  box-shadow:0 0 34px -8px var(--n-p,#ffe94a),inset 0 0 18px rgba(255,255,255,.04);
+  position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+  max-width:100%;padding:30px 34px 28px;border-radius:10px;margin-bottom:8px;
+  background:linear-gradient(165deg,rgba(255,255,255,.18),rgba(255,255,255,.05) 40%,rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.4),
+    inset 0 -1px 0 rgba(255,255,255,.06),
+    0 12px 28px rgba(0,0,0,.4),
+    0 0 36px color-mix(in srgb,var(--n-p) 42%,transparent),
+    0 0 88px color-mix(in srgb,var(--n-p) 28%,transparent);
+}
+.neon-board::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(125deg,rgba(255,255,255,.26) 0%,transparent 38%);
+}
+.neon-board::after{
+  content:"";position:absolute;left:14%;right:14%;bottom:-16px;height:18px;pointer-events:none;z-index:-1;
+  background:radial-gradient(ellipse,var(--n-p),transparent 70%);opacity:.42;filter:blur(9px);
 }
 .neon-board.type-lampe_socle{
-  border-radius:24px 24px 10px 10px;padding:24px 26px 26px;margin-bottom:14px;
-  border-color:rgba(255,255,255,.22);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+  border-radius:22px 22px 8px 8px;padding:26px 28px 24px;margin-bottom:0;
 }
 .neon-board.type-tableau_lumineux{
-  border-radius:10px;padding:26px 30px;border:3px solid rgba(255,255,255,.24);
-  box-shadow:0 0 46px -4px var(--n-p,#ffe94a),0 0 22px -4px var(--n-s,#ff9f00),inset 0 0 28px rgba(255,255,255,.06);
+  border-radius:8px;padding:28px 32px;border:2px solid rgba(255,255,255,.28);
 }
-.neon-board.layout-badge{border-radius:999px;padding:18px 32px}
-.neon-standoff{position:absolute;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 4px rgba(0,0,0,.8)}
+.neon-board.layout-badge{border-radius:999px;padding:20px 34px}
+.neon-standoff{
+  position:absolute;width:9px;height:9px;border-radius:50%;z-index:2;
+  background:radial-gradient(circle at 35% 30%,#f2f2f2,#8d8d8d 50%,#3a3a3a);
+  box-shadow:0 1px 2px rgba(0,0,0,.65),inset 0 0 0 1px rgba(0,0,0,.28);
+}
+.neon-standoff::after{content:"";position:absolute;left:2px;right:2px;top:4px;height:1px;background:#222}
 .st-tl{top:8px;left:8px}.st-tr{top:8px;right:8px}.st-bl{bottom:8px;left:8px}.st-br{bottom:8px;right:8px}
+.neon-cable{
+  position:absolute;left:10%;bottom:-22px;width:28px;height:26px;z-index:0;pointer-events:none;overflow:visible;
+}
+.neon-board.type-lampe_socle .neon-cable{display:none}
 .neon-pedestal{
-  width:min(170px,62%);height:16px;margin-top:-12px;border-radius:8px 8px 12px 12px;
+  position:relative;z-index:1;width:min(170px,62%);height:16px;margin-top:2px;border-radius:8px 8px 12px 12px;
   background:linear-gradient(180deg,#2b2238,#130d1e);border:1px solid rgba(255,255,255,.18);
-  box-shadow:0 -4px 20px var(--n-p,#ffe94a),0 8px 18px rgba(0,0,0,.7);
+  box-shadow:0 -6px 22px var(--n-p),0 8px 18px rgba(0,0,0,.7);
 }
 .neon-svg-ico{
-  width:40px;height:40px;flex-shrink:0;color:#fff;
-  filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px var(--n-s,#ff9f00)) drop-shadow(0 0 22px var(--n-p,#ffe94a));
-}
-.neon-sign-txt{
-  font-size:clamp(1.85rem,6.6vw,2.75rem);line-height:1.15;text-align:center;word-break:break-word;
-  color:#fffef5;-webkit-text-stroke:.8px var(--n-p,#ffe94a);paint-order:stroke fill;
-  text-shadow:
-    0 0 2px #fff,
-    0 0 7px #fff,
-    0 0 14px var(--n-p,#ffe94a),
-    0 0 28px var(--n-p,#ffe94a),
-    0 0 52px var(--n-s,#ff9f00);
-  animation:hum 6s ease-in-out infinite;
-}
-.neon-sign-txt.font-cursive{font-family:Pacifico,cursive;font-weight:400;padding:0 4px}
-.neon-sign-txt.font-retro{font-family:Monoton,cursive;font-weight:400;letter-spacing:.04em}
-.neon-sign-txt.font-modern{font-family:Outfit,sans-serif;font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:clamp(1.5rem,5.4vw,2.2rem)}
-.neon-sign-txt.font-bold{font-family:Outfit,sans-serif;font-weight:800;letter-spacing:.03em;text-transform:uppercase;font-size:clamp(1.6rem,5.8vw,2.35rem)}
-.neon-stage.intense .neon-sign-txt{
-  text-shadow:0 0 2px #fff,0 0 8px #fff,0 0 18px var(--n-p,#ffe94a),0 0 38px var(--n-p,#ffe94a),0 0 70px var(--n-s,#ff9f00);
+  width:42px;height:42px;flex-shrink:0;color:var(--n-core,#fff);
+  stroke:var(--n-p);stroke-width:1.7;
+  filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 8px var(--n-p)) drop-shadow(0 0 18px var(--n-p));
 }
 
+/* Tube néon : cœur blanc chaud + gaine saturée + halos souples */
+.neon-sign{position:relative;display:inline-block;max-width:100%;text-align:center;line-height:1.22;z-index:1}
+.neon-sign-bloom,.neon-sign-halo,.neon-sign-tube{
+  position:absolute;left:0;top:0;width:100%;margin:0;pointer-events:none;user-select:none;
+  text-align:center;white-space:pre-wrap;word-break:break-word;
+}
+.neon-sign-bloom{color:var(--n-p);filter:blur(14px);opacity:.7;z-index:0}
+.neon-sign-halo{color:var(--n-p);filter:blur(5px);opacity:.9;z-index:1}
+.neon-sign-tube{
+  color:transparent;-webkit-text-stroke:3.2px var(--n-p);paint-order:stroke fill;
+  filter:blur(.4px);opacity:.88;z-index:2;
+}
+.neon-sign-core{
+  position:relative;z-index:3;display:block;
+  color:#fff;
+  -webkit-text-stroke:.9px color-mix(in srgb,var(--n-p) 80%,#fff);
+  paint-order:stroke fill;
+  text-shadow:0 0 1px #fff,0 0 3px #fff,0 0 8px var(--n-p),0 0 16px var(--n-p);
+  word-break:break-word;
+}
+.neon-sign.font-cursive,.neon-sign.font-cursive .neon-sign-bloom,.neon-sign.font-cursive .neon-sign-halo,.neon-sign.font-cursive .neon-sign-tube,.neon-sign.font-cursive .neon-sign-core{
+  font-family:Neonderthaw,Pacifico,cursive;font-weight:400;letter-spacing:.02em;
+  font-size:clamp(2.7rem,15vw,5.1rem);padding:0 .12em .08em;
+}
+.neon-sign.font-retro,.neon-sign.font-retro .neon-sign-bloom,.neon-sign.font-retro .neon-sign-halo,.neon-sign.font-retro .neon-sign-tube,.neon-sign.font-retro .neon-sign-core{
+  font-family:Monoton,cursive;font-weight:400;letter-spacing:.04em;
+  font-size:clamp(2rem,10vw,3.5rem);
+}
+.neon-sign.font-modern,.neon-sign.font-modern .neon-sign-bloom,.neon-sign.font-modern .neon-sign-halo,.neon-sign.font-modern .neon-sign-tube,.neon-sign.font-modern .neon-sign-core{
+  font-family:Outfit,sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  font-size:clamp(1.7rem,8vw,2.6rem);
+}
+.neon-sign.font-bold,.neon-sign.font-bold .neon-sign-bloom,.neon-sign.font-bold .neon-sign-halo,.neon-sign.font-bold .neon-sign-tube,.neon-sign.font-bold .neon-sign-core{
+  font-family:Outfit,sans-serif;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  font-size:clamp(1.8rem,8.5vw,2.8rem);
+}
+.neon-stage.intense .neon-sign-bloom{filter:blur(18px);opacity:.85}
+.neon-stage.intense .neon-sign-core{text-shadow:0 0 2px #fff,0 0 5px #fff,0 0 12px var(--n-p),0 0 24px var(--n-p)}
+
+/* Allumage en scintillement, puis haleine très légère */
+.neon-stage.ignite .neon-sign,
+.neon-stage.ignite .neon-svg-ico{animation:neon-ignite 1.15s ease-out both}
+.neon-stage.ignite::before{animation:neon-wash-on 1.15s ease-out both}
+.neon-sign-bloom{animation:neon-hum 5.5s ease-in-out 1.2s infinite}
+@keyframes neon-ignite{
+  0%{opacity:0}
+  8%{opacity:.12}
+  12%{opacity:.85}
+  16%{opacity:.18}
+  26%{opacity:1}
+  32%{opacity:.38}
+  40%{opacity:1}
+  46%{opacity:.72}
+  58%{opacity:1}
+}
+@keyframes neon-wash-on{
+  0%{opacity:0}
+  12%{opacity:.2}
+  16%{opacity:.7}
+  22%{opacity:.15}
+  40%{opacity:1}
+}
+@keyframes neon-hum{0%,100%{opacity:.8}50%{opacity:.95}}
+
 /* Nuancier rapide sous l'aperçu */
-.neon-swatches{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;z-index:1}
-.neon-swatches span{font-size:.74rem;color:#c9b88a}
+.neon-swatches{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:26px;
+  padding:.32rem .7rem;border-radius:999px;background:rgba(10,7,14,.42);border:1px solid rgba(255,255,255,.1)}
+.neon-swatches span{font-size:.74rem;color:#e6d7b0}
 .sw-dot{
-  width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.35);cursor:pointer;
+  width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.4);cursor:pointer;
   transition:transform .2s,border-color .2s;
 }
 .sw-dot:hover,.sw-dot.on{transform:scale(1.18);border-color:#fff}
 
+@media(max-width:560px){
+  .neon-stage{min-height:250px;padding:34px 12px 22px}
+  .neon-board{padding:24px 20px 26px}
+  .neon-sign-tube{-webkit-text-stroke-width:2.6px}
+  .neon-sign-bloom{filter:blur(11px)}
+  .neon-window{height:30%;opacity:.4}
+  .neon-fairy{opacity:.28}
+}
 /* Fiche détails + CTA */
 .neon-info{
   display:flex;flex-direction:column;gap:10px;padding:16px 18px;border-radius:18px;
