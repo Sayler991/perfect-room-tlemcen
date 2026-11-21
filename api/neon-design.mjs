@@ -90,14 +90,8 @@ function buildFallbackDesign(rawPrompt) {
     backingShape = 'Cadre mural rétroéclairé haute luminosité';
   }
 
-  let fontStyle = 'modern';
-  if (/\b(cursif|cursive|calligraph|script|manuscrit|pr[eé]nom|amour|love)\b/.test(low)) {
-    fontStyle = 'cursive';
-  } else if (/(?:^|[^a-zA-ZÀ-ÿ])(r[eé]tro|vintage|80|disco|bar|caf[eé])(?![a-zA-ZÀ-ÿ])/.test(low)) {
-    fontStyle = 'retro';
-  } else if (/\b(gaming|sport|fort|bold|boutique|salon|logo)\b/.test(low)) {
-    fontStyle = 'bold';
-  }
+  // Écriture cursive (tube néon) par défaut ; autre style seulement sur demande explicite
+  const fontStyle = explicitFontStyle(low) || 'cursive';
 
   let icon = 'none';
   if (/\b(c[oœ]ur|love|amour|mariage|couple)\b/.test(low)) icon = 'heart';
@@ -154,12 +148,20 @@ function buildFallbackDesign(rawPrompt) {
   };
 }
 
+function explicitFontStyle(low) {
+  if (/(?:^|[^a-zA-ZÀ-ÿ])(r[eé]tro|vintage|disco|ann[eé]es 80)(?![a-zA-ZÀ-ÿ])/.test(low)) return 'retro';
+  if (/\b(gras|bold|majuscules?|b[aâ]ton|imprimerie)\b/.test(low)) return 'bold';
+  if (/(?:^|[^a-zA-ZÀ-ÿ])(moderne|[eé]pur[eé]|minimalistes?)(?![a-zA-ZÀ-ÿ])/.test(low)) return 'modern';
+  return null;
+}
+
 function normalizeDesign(raw, originalPrompt) {
   const fb = buildFallbackDesign(originalPrompt);
   if (!raw || typeof raw !== 'object') return fb;
   const neonText = cleanText(raw.neonText || fb.neonText, 28) || fb.neonText;
   const productType = ALLOWED_TYPES.has(raw.productType) ? raw.productType : fb.productType;
-  const fontStyle = ALLOWED_FONTS.has(raw.fontStyle) ? raw.fontStyle : fb.fontStyle;
+  // Cursif imposé sauf si le client a explicitement demandé un autre style
+  const fontStyle = explicitFontStyle(String(originalPrompt || '').toLowerCase()) || 'cursive';
   const icon = ALLOWED_ICONS.has(raw.icon) ? raw.icon : fb.icon;
   const layout = ALLOWED_LAYOUTS.has(raw.layout) ? raw.layout : fb.layout;
   const primaryColor = sanitizeHex(raw.primaryColor, fb.primaryColor);
@@ -211,7 +213,7 @@ async function callGateway(prompt, token, model) {
     '- N\'invente JAMAIS de prix ni de délai de livraison.',
     '- "neonText" doit être court et percutant (1 à 26 caractères max, ex: "Sara", "Coffee Time", "Gaming Zone").',
     '- Choisis des couleurs néon lumineuses et harmonieuses en hex (#RRGGBB) adaptées à un mur sombre.',
-    '- "fontStyle" parmi : "cursive" (prénoms, cadeaux, cozy), "modern" (épuré, chambre, salon), "retro" (café, bar, vintage), "bold" (gaming, sport, boutique).',
+    '- "fontStyle" : TOUJOURS "cursive" (écriture néon en tube cursif) par défaut ; "modern", "retro" ou "bold" uniquement si le client le demande explicitement.',
     '- "icon" parmi : "heart", "star", "crown", "sparkle", "coffee", "car", "gamepad", "moon", "grad", "book", "bolt", "flower", "music", "none".',
     '- "layout" parmi : "centered", "inline_icon", "badge", "framed".',
     '- "glowIntensity" parmi : "doux", "intense".',

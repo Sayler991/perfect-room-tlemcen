@@ -184,10 +184,11 @@ function localFallback(raw){
     productType='tableau_lumineux';productTypeLabel='Tableau lumineux rétroéclairé';dimensionsCm='40 × 60 cm';backingShape='Cadre mural rétroéclairé';
   }
 
-  let fontStyle='modern';
-  if(/\b(cursif|cursive|calligraph|script|manuscrit|pr[eé]nom|amour|love)\b/.test(low))fontStyle='cursive';
-  else if(/(?:^|[^a-zA-ZÀ-ÿ])(r[eé]tro|vintage|80|disco|bar|caf[eé])(?![a-zA-ZÀ-ÿ])/.test(low))fontStyle='retro';
-  else if(/\b(gaming|sport|fort|bold|boutique|salon|logo)\b/.test(low))fontStyle='bold';
+  // Écriture cursive (tube néon) par défaut ; autre style seulement si le client le demande explicitement
+  let fontStyle='cursive';
+  if(/(?:^|[^a-zA-ZÀ-ÿ])(r[eé]tro|vintage|disco|ann[eé]es 80)(?![a-zA-ZÀ-ÿ])/.test(low))fontStyle='retro';
+  else if(/\b(gras|bold|majuscules?|b[aâ]ton|imprimerie)\b/.test(low))fontStyle='bold';
+  else if(/(?:^|[^a-zA-ZÀ-ÿ])(moderne|[eé]pur[eé]|minimalistes?)(?![a-zA-ZÀ-ÿ])/.test(low))fontStyle='modern';
 
   let icon='none';
   if(/\b(c[oœ]ur|love|amour|mariage|couple)\b/.test(low))icon='heart';
