@@ -154,7 +154,26 @@ const SWATCHES=[
   {hex:'#ff4d5e',sec:'#ffb45c',name:'Rouge vif'}
 ];
 
-let lastDesign=null,busy=false;
+let lastDesign=null,busy=false,activeModel=null;
+// Les 4 modèles : un style chacun. Une fois choisi, tout texte tapé s'affiche dans ce style.
+const MODELS={
+  sara:{name:'Sara · cursif rose',fontStyle:'cursive',icon:'heart',layout:'inline_icon',productType:'neon_mural',productTypeLabel:'Néon LED mural sur acrylique',dimensionsCm:'50 × 22 cm',backingShape:'Découpe contour acrylique transparent',primaryColor:'#ff5fb8',primaryColorName:'Rose néon',secondaryColor:'#ffd6ec',secondaryColorName:'Blanc rosé'},
+  gaming:{name:'Gaming · bleu audacieux',fontStyle:'bold',icon:'gamepad',layout:'inline_icon',productType:'neon_mural',productTypeLabel:'Néon LED mural sur acrylique',dimensionsCm:'60 × 25 cm',backingShape:'Découpe contour acrylique transparent',primaryColor:'#5ce8ff',primaryColorName:'Bleu glacier',secondaryColor:'#b37bff',secondaryColorName:'Violet néon'},
+  coffee:{name:'Coffee · rétro ambre',fontStyle:'retro',icon:'coffee',layout:'inline_icon',productType:'neon_mural',productTypeLabel:'Enseigne néon LED sur acrylique',dimensionsCm:'55 × 25 cm',backingShape:'Plaque acrylique rectangulaire transparente',primaryColor:'#ffb45c',primaryColorName:'Ambre chaud',secondaryColor:'#ff9f00',secondaryColorName:'Orange doux'},
+  diplome:{name:'Lampe diplôme',fontStyle:'modern',icon:'grad',layout:'inline_icon',productType:'lampe_socle',productTypeLabel:'Lampe LED gravée sur socle',dimensionsCm:'22 × 18 cm',backingShape:'Plaque acrylique gravée sur socle lumineux',primaryColor:'#ffe94a',primaryColorName:'Doré chaud',secondaryColor:'#ff9f00',secondaryColorName:'Ambre doux'}
+};
+const COLOR_RX=/(?:^|[^a-zA-ZÀ-ÿ])(rose|pink|fushia|magenta|bleu|bleue|cyan|turquoise|azur|violet|lilas|mauve|purple|rouge|red|vert|verte|menthe|green|jaune|blanc|blanche|ambre|orange|dor[eé]e?)(?![a-zA-ZÀ-ÿ])/i;
+function applyModel(d,q){
+  const m=activeModel&&MODELS[activeModel];
+  if(!m||!d)return d;
+  const out=Object.assign({},d,{fontStyle:m.fontStyle,icon:m.icon,layout:m.layout,productType:m.productType,productTypeLabel:m.productTypeLabel,dimensionsCm:m.dimensionsCm,backingShape:m.backingShape});
+  if(!COLOR_RX.test(q)){Object.assign(out,{primaryColor:m.primaryColor,primaryColorName:m.primaryColorName,secondaryColor:m.secondaryColor,secondaryColorName:m.secondaryColorName});}
+  out.subtitle=`${out.productTypeLabel} · ${out.primaryColorName}`;
+  out.designNotes=`Maquette personnalisée en ${String(out.primaryColorName).toLowerCase()} sur ${String(out.backingShape).toLowerCase()}, style ${m.name}.`;
+  out.placementTip=out.productType==='lampe_socle'?'Parfait sur une table de chevet, une étagère ou un bureau':'Idéal fixé au mur pour créer une ambiance douce et chaleureuse';
+  out.whatsappSummary=`Bonjour Perfect Room, je souhaite un devis pour ce design : ${out.productTypeLabel} « ${out.neonText} » (modèle ${m.name}, ${out.primaryColorName}, env. ${out.dimensionsCm}).`;
+  return out;
+}
 const safeHex=(h,f)=>/^#[0-9a-fA-F]{6}$/.test(String(h||''))?String(h):f;
 const hexRgba=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
 const mixHex=(a,b,t)=>{const n=h=>{const x=parseInt(h.slice(1),16);return [x>>16&255,x>>8&255,x&255]};const A=n(a),B=n(b);return '#'+[0,1,2].map(i=>Math.round(A[i]+(B[i]-A[i])*t).toString(16).padStart(2,'0')).join('')};
@@ -319,7 +338,7 @@ async function generateDesign(prompt){
   const q=String(prompt||'').replace(/\s+/g,' ').trim();
   errEl.hidden=true;errEl.textContent='';
   if(q.length<2){
-    errEl.textContent='Écrivez quelques mots pour décrire votre néon (ex. : « Prénom Sara en rose cursif »).';
+    errEl.textContent='Écrivez quelques mots pour décrire votre néon (ex. : « Prénom Sara »).';
     errEl.hidden=false;input.focus();return;
   }
   if(busy)return;
@@ -341,16 +360,16 @@ async function generateDesign(prompt){
     if(!resp.ok&&resp.status===429){
       errEl.textContent=(data&&data.error)||'Patientez un instant avant une nouvelle demande.';
       errEl.hidden=false;
-      renderDesign(localFallback(q));
+      renderDesign(applyModel(localFallback(q),q));
       return;
     }
     if(data&&data.ok&&data.design){
-      renderDesign(data.design);
+      renderDesign(applyModel(data.design,q));
     }else{
-      renderDesign(localFallback(q));
+      renderDesign(applyModel(localFallback(q),q));
     }
   }catch(_){
-    renderDesign(localFallback(q));
+    renderDesign(applyModel(localFallback(q),q));
   }finally{
     clearTimeout(t);
     busy=false;btn.disabled=false;btn.classList.remove('loading');
@@ -363,11 +382,25 @@ form.addEventListener('submit',e=>{
   generateDesign(input.value);
 });
 
+const modelNote=$('#neonModelNote');
+function setModel(key){
+  activeModel=key&&MODELS[key]?key:null;
+  $$('.neon-chip').forEach(c=>{const on=c.dataset.model===activeModel;c.classList.toggle('active',on);c.setAttribute('aria-pressed',on?'true':'false')});
+  if(modelNote)modelNote.innerHTML=activeModel
+    ?`Modèle choisi : <strong>${esc(MODELS[activeModel].name)}</strong>. Tapez votre texte, il s'affichera dans ce style. <button type="button" class="neon-model-reset">Revenir au cursif</button>`
+    :'Écriture cursive par défaut. Choisissez un modèle pour changer de style.';
+  const r=modelNote&&modelNote.querySelector('.neon-model-reset');
+  if(r)r.addEventListener('click',()=>{setModel(null);input.focus()});
+  input.placeholder=activeModel?'Tapez votre prénom ou votre texte…':input.dataset.ph||input.placeholder;
+}
+if(!input.dataset.ph)input.dataset.ph=input.placeholder;
 $$('.neon-chip').forEach(chip=>{
   chip.addEventListener('click',()=>{
-    $$('.neon-chip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    input.value=chip.dataset.prompt||'';
+    if(activeModel===chip.dataset.model){setModel(null);return;}
+    setModel(chip.dataset.model);
+    const typed=input.value.trim();
+    const isExample=$$('.neon-chip').some(c=>c.dataset.prompt===typed);
+    if(!typed||isExample)input.value=chip.dataset.prompt||'';
     generateDesign(input.value);
   });
 });

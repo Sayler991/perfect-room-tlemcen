@@ -610,3 +610,7 @@ html.lb-open{overflow:hidden}
 .neon-ctas{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:4px}
 .neon-ctas .btn{flex:1 1 auto;min-width:140px;padding:.72rem .95rem;font-size:.86rem;white-space:nowrap}
 .neon-quote-note{font-size:.75rem;color:#baa776;text-align:center}
+
+.neon-model-note{text-align:center;font-size:.8rem;color:#cab680;margin:.55rem auto 0;max-width:46ch;line-height:1.45}
+.neon-model-note strong{color:#fff59a;font-weight:600}
+.neon-model-reset{margin-left:.35rem;background:none;border:0;padding:0;color:#ff9fd4;font:inherit;text-decoration:underline;cursor:pointer}
