@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Perfect Room — Créations lumineuses à Tlemcen</title>
-<meta name="description" content="Perfect Room, fabricant de luminaires à Tlemcen : lampes LED gravées et tableaux lumineux. Noté 5,0 sur Google. Ouvert tous les jours sauf le vendredi, 9h–20h. Tél. 0561 12 29 11.">
+<meta name="description" content="Perfect Room, fabricant de luminaires à Tlemcen : lampes LED gravées, néons sur mesure et tableaux lumineux. Noté 5,0 sur Google. Ouvert tous les jours sauf le vendredi, 9h–20h. Tél. 0561 12 29 11.">
 <meta name="theme-color" content="#0b0714">
 <meta property="og:title" content="Perfect Room — Créations lumineuses à Tlemcen">
-<meta property="og:description" content="Lampes LED gravées et tableaux lumineux. Tlemcen · 0561 12 29 11">
+<meta property="og:description" content="Lampes LED gravées, néons personnalisés et tableaux lumineux. Tlemcen · 0561 12 29 11">
 <meta property="og:image" content="img/og.jpg">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Monoton&family=Outfit:wght@300;400;600;800&family=Pacifico&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="img/lampe-livre-coran-700.webp"><link rel="preconnect" href="https://rvreusugrtiubqtafgbk.supabase.co" crossorigin>
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Store","name":"Perfect Room","description":"Fabricant de luminaires à Tlemcen","telephone":"+213561122911","address":{"@type":"PostalAddress","addressLocality":"Tlemcen","postalCode":"13000","addressCountry":"DZ"},"geo":{"@type":"GeoCoordinates","latitude":34.8849688,"longitude":-1.3256298},"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday"],"opens":"09:00","closes":"20:00"}],"aggregateRating":{"@type":"AggregateRating","ratingValue":"5","reviewCount":"2"}}
 </script>
@@ -31,7 +31,7 @@
 <header class="nav" id="nav">
   <a href="#top" class="brand" aria-label="Perfect Room — accueil"><span class="brand-p">Perfect</span><span class="brand-r">Room</span></a>
   <nav class="links">
-    <a href="#creations">Créations</a><a href="#atelier">L'atelier</a><a href="#galerie">Galerie</a><a href="#horaires">Horaires</a><a href="#contact">Contact</a>
+    <a href="#ia-neon">Créer un néon</a><a href="#creations">Créations</a><a href="#atelier">L'atelier</a><a href="#galerie">Galerie</a><a href="#horaires">Horaires</a><a href="#contact">Contact</a>
   </nav>
   <a class="nav-call" data-tel href="tel:+213561122911">Appeler</a>
 </header>
@@ -47,6 +47,50 @@
       <a class="btn btn-glow" data-tel href="tel:+213561122911"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg><span data-tel-text>0561 12 29 11</span></a>
       <a class="btn btn-wa" data-wa href="https://wa.me/213561122911" target="_blank" rel="noopener">💬 WhatsApp</a>
     </div>
+  </div>
+</section>
+
+<!-- Barre IA : concepteur de néon personnalisé -->
+<section class="neon-ai-sec" id="ia-neon" aria-labelledby="neonAiTitle">
+  <div class="neon-ai-box reveal">
+    <div class="neon-ai-head">
+      <span class="neon-ai-badge"><span class="ai-spark" aria-hidden="true">✦</span> Atelier Néon IA</span>
+      <h2 class="neon-ai-title" id="neonAiTitle">Imaginez votre néon sur mesure</h2>
+      <p class="neon-ai-sub">Décrivez le texte, la couleur ou l'ambiance : l'IA vous prépare un aperçu visuel prêt à commander.</p>
+    </div>
+
+    <form class="neon-search" id="neonForm" novalidate>
+      <label class="sr-only" for="neonPrompt">Décrivez le néon que vous voulez fabriquer</label>
+      <div class="neon-input-wrap">
+        <span class="neon-search-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </span>
+        <input
+          id="neonPrompt"
+          name="prompt"
+          type="text"
+          maxlength="240"
+          autocomplete="off"
+          enterkeyhint="go"
+          placeholder="Ex. : prénom Sara en rose cursif pour chambre…"
+        >
+        <button type="submit" class="neon-submit" id="neonSubmit">
+          <span class="neon-submit-txt">Créer mon néon</span>
+          <span class="neon-submit-spin" aria-hidden="true"></span>
+        </button>
+      </div>
+      <p class="neon-err" id="neonErr" role="alert" hidden></p>
+    </form>
+
+    <div class="neon-chips" aria-label="Exemples d'idées à essayer">
+      <span class="chips-lbl">Idées rapides :</span>
+      <button type="button" class="neon-chip" data-prompt="Prénom Sara en rose cursif avec un cœur pour chambre">✨ Prénom Sara rose</button>
+      <button type="button" class="neon-chip" data-prompt="Néon gaming Zone Pro bleu glacier et violet avec manette">🎮 Coin gaming bleu</button>
+      <button type="button" class="neon-chip" data-prompt="Enseigne Coffee Time style rétro ambre chaud pour salon">☕ Coffee Time ambre</button>
+      <button type="button" class="neon-chip" data-prompt="Lampe diplôme gravée sur socle doré avec prénom Yasmine">🎓 Lampe diplôme</button>
+    </div>
+
+    <div class="neon-result" id="neonResult" hidden aria-live="polite"></div>
   </div>
 </section>
 
@@ -132,6 +176,6 @@
   <button class="lb-nav lb-next" id="lbNext" aria-label="Photo suivante">›</button>
   <p class="lb-cap" id="lbCap"></p>
 </div>
-<script src="main.js?v=3" defer></script>
+<script src="main.js?v=4" defer></script>
 </body>
 </html>
