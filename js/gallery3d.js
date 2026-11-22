@@ -25,13 +25,23 @@ function hexColor(h, fallback='#ffb45c'){
 
 function classify(p){
   const n = ((p.name||'')+' '+(p.description||'')).toLowerCase();
+  const example = !!p.example;
+  const kindEx = 'Exemple de réalisation';
   if(/tableau|r[eé]tro[eé]?clair|pop art/.test(n))
-    return {kind:'Tableau rétroéclairé', collection:'tableaux', title:'TABLEAUX LUMINEUX', kicker:'Créations murales', glow:'#ff7ad9', enter:'Découvrir la collection'};
+    return {kind: example?kindEx:'Tableau rétroéclairé', collection:'tableaux', title:'TABLEAUX LUMINEUX', kicker:'Créations murales', glow:'#ff7ad9', enter:'Découvrir la collection'};
+  if(/n[eé]on/.test(n)){
+    const glow = /commerce|enseigne|caf[eé]/.test(n) ? '#ffb45c' : '#ffb0d0';
+    return {kind: example?kindEx:'Néon personnalisé', collection:'neons', title:'NÉONS PERSONNALISÉS', kicker:'Modèles personnalisables', glow, enter:'Découvrir les exemples'};
+  }
   if(/voiture|course/.test(n))
-    return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ff4d5e', enter:'Découvrir la collection'};
+    return {kind: example?kindEx:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ff4d5e', enter:'Découvrir la collection'};
   if(/dipl[oô]me/.test(n))
-    return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#e8f0ff', enter:'Découvrir la collection'};
-  return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ffb45c', enter:'Découvrir la collection'};
+    return {kind: example?kindEx:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#e8f0ff', enter:'Découvrir la collection'};
+  if(/enfant|veilleuse/.test(n))
+    return {kind: example?kindEx:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ffe18a', enter:'Découvrir la collection'};
+  if(/couple/.test(n))
+    return {kind: example?kindEx:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ffe8c8', enter:'Découvrir la collection'};
+  return {kind: example?kindEx:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ffb45c', enter:'Découvrir la collection'};
 }
 
 function webglInfo(){
@@ -125,6 +135,65 @@ function makeFloorTitleTex(kicker, title, enter){
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
+}
+
+function makePaintedBrickTex(){
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#f4f1ea';
+  ctx.fillRect(0,0,512,512);
+  const bw = 86, bh = 36, mort = 3;
+  let row = 0;
+  for(let y=0; y<512; y+=bh){
+    const off = (row%2) ? bw/2 : 0;
+    for(let x=-bw; x<512+bw; x+=bw){
+      const n = ((x*13+y*7+row*3)%9);
+      const v = 236 + n; // very light cream variation
+      ctx.fillStyle = `rgb(${v},${v-2},${v-8})`;
+      const xx = x+off+mort, yy = y+mort, ww = bw-mort, hh = bh-mort;
+      ctx.fillRect(xx, yy, ww, hh);
+      ctx.fillStyle = 'rgba(150,140,128,0.10)';
+      ctx.fillRect(xx, yy+hh-2, ww, 2);
+    }
+    row++;
+  }
+  // very faint mortar lines
+  ctx.strokeStyle = 'rgba(158,148,132,0.32)';
+  ctx.lineWidth = 1.2;
+  row = 0;
+  for(let y=0; y<=512; y+=bh){
+    ctx.beginPath(); ctx.moveTo(0,y+0.5); ctx.lineTo(512,y+0.5); ctx.stroke();
+    const off = (row%2) ? bw/2 : 0;
+    for(let x=-bw; x<512+bw; x+=bw){
+      ctx.beginPath(); ctx.moveTo(x+off+0.5,y); ctx.lineTo(x+off+0.5,y+bh); ctx.stroke();
+    }
+    row++;
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 4;
+  t.needsUpdate = true;
+  return t;
+}
+
+function addPaintedBrickSkin(scene){
+  const tex = makePaintedBrickTex();
+  tex.repeat.set(36, 6);
+  const pts = [
+    new THREE.Vector2(R - 0.012, COVE + 0.06),
+    new THREE.Vector2(R - 0.012, COVE + WALL_H - 0.2)
+  ];
+  const geo = new THREE.LatheGeometry(pts, 96, 0, Math.PI * 2);
+  const mat = new THREE.MeshBasicMaterial({
+    map: tex,
+    transparent: true,
+    opacity: 0.2,
+    depthWrite: false,
+    side: THREE.DoubleSide
+  });
+  scene.add(new THREE.Mesh(geo, mat));
 }
 
 function makeHallGeometry(){
@@ -595,19 +664,21 @@ async function rebuildFrames(products){
 
   // Grouper : lampes puis tableaux (parcours muséal), sans inventer de produits
   const decorated = products.map(p=>({p, meta:classify(p)}));
-  const groups = {lampes:[], tableaux:[], autres:[]};
+  const groups = {lampes:[], neons:[], tableaux:[], autres:[]};
   decorated.forEach(d=>{
     if(d.meta.collection==='lampes') groups.lampes.push(d);
+    else if(d.meta.collection==='neons') groups.neons.push(d);
     else if(d.meta.collection==='tableaux') groups.tableaux.push(d);
     else groups.autres.push(d);
   });
-  const ordered = [...groups.lampes, ...groups.tableaux, ...groups.autres];
+  const ordered = [...groups.lampes, ...groups.neons, ...groups.tableaux, ...groups.autres];
   const collections = [];
   const pushCol = (key, items)=>{
     if(!items.length) return;
     collections.push({key, items, meta:items[0].meta});
   };
   pushCol('lampes', groups.lampes);
+  pushCol('neons', groups.neons);
   pushCol('tableaux', groups.tableaux);
   pushCol('autres', groups.autres);
 
@@ -947,6 +1018,7 @@ async function init3D(){
   const hall = new THREE.Mesh(hallGeo, hallMat);
   hall.receiveShadow = false;
   scene.add(hall);
+  addPaintedBrickSkin(scene);
 
   // Caps aux extrémités (murs blancs discrets) pour éviter de voir le vide
   const capMat = new THREE.MeshStandardMaterial({color:0xf5f5f5, roughness:.95, metalness:0});
@@ -983,7 +1055,8 @@ function setProducts(products){
     description: p.description||'',
     photo: p.photo,
     thumb: p.thumb||p.photo,
-    price: p.price||''
+    price: p.price||'',
+    example: !!p.example
   }));
   if(productsKey(list)===productsKey(state.products) && (state.ready||state.mode==='fallback')) return;
   state.products = list;

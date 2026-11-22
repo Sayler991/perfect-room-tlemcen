@@ -4,7 +4,7 @@
  "kicker": "Fabricant de luminaires · Tlemcen",
  "lead": "Des créations lumineuses qui donnent à chaque pièce une ambiance douce, chaleureuse… parfaite.",
  "products_title": "Nos créations",
- "products_intro": "Photos réelles de nos créations. Prix et modèles sur demande : appelez ou écrivez-nous.",
+ "products_intro": "Photos de créations Perfect Room, et des exemples de modèles personnalisables. Prix sur demande : appelez ou écrivez-nous.",
  "about_intro": "À Tlemcen, Perfect Room fabrique des luminaires décoratifs : des lampes à plaque gravée posées sur un socle lumineux et des tableaux rétroéclairés. Une lumière douce pour une chambre, un salon, un bureau… ou pour faire plaisir.",
  "hours": [
   {
@@ -86,6 +86,46 @@
    "price": "",
    "description": "Voiture de course gravée, lumière rouge.",
    "visible": true
+  },
+  {
+   "id": "p5",
+   "name": "Néon prénom personnalisé",
+   "photo": "img/exemple-neon-prenom-1400.webp",
+   "thumb": "img/exemple-neon-prenom-700.webp",
+   "price": "",
+   "description": "Modèle personnalisable avec le prénom de votre choix.",
+   "visible": true,
+   "example": true
+  },
+  {
+   "id": "p6",
+   "name": "Lampe photo gravée couple",
+   "photo": "img/exemple-lampe-couple-1400.webp",
+   "thumb": "img/exemple-lampe-couple-700.webp",
+   "price": "",
+   "description": "Lampe LED gravée d'un motif couple, modèle personnalisable.",
+   "visible": true,
+   "example": true
+  },
+  {
+   "id": "p7",
+   "name": "Néon enseigne pour commerce",
+   "photo": "img/exemple-neon-commerce-1400.webp",
+   "thumb": "img/exemple-neon-commerce-700.webp",
+   "price": "",
+   "description": "Enseigne néon pour commerce (exemple « Café Palmier »), texte et couleurs à personnaliser.",
+   "visible": true,
+   "example": true
+  },
+  {
+   "id": "p8",
+   "name": "Lampe veilleuse enfant",
+   "photo": "img/exemple-veilleuse-enfant-1400.webp",
+   "thumb": "img/exemple-veilleuse-enfant-700.webp",
+   "price": "",
+   "description": "Veilleuse LED gravée avec un prénom d'enfant, modèle personnalisable.",
+   "visible": true,
+   "example": true
   }
  ],
  "gallery": [

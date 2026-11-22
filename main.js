@@ -1,7 +1,7 @@
 (()=>{
 'use strict';
 const SB='https://rvreusugrtiubqtafgbk.supabase.co',KEY='sb_publishable_rTrEZB4mivU7kr9IwabvBQ_Q31CFt_1';
-const DEFAULT={"phone": "0561 12 29 11", "whatsapp": "213561122911", "kicker": "Fabricant de luminaires · Tlemcen", "lead": "Des créations lumineuses qui donnent à chaque pièce une ambiance douce, chaleureuse… parfaite.", "products_title": "Nos créations", "products_intro": "Photos réelles de nos créations. Prix et modèles sur demande : appelez ou écrivez-nous.", "about_intro": "À Tlemcen, Perfect Room fabrique des luminaires décoratifs : des lampes à plaque gravée posées sur un socle lumineux et des tableaux rétroéclairés. Une lumière douce pour une chambre, un salon, un bureau… ou pour faire plaisir.", "hours": [{"dow": 6, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 0, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 1, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 2, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 3, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 4, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 5, "closed": true, "open": "09:00", "close": "20:00"}], "products": [{"id": "p1", "name": "Lampe livre gravé", "photo": "img/lampe-livre-coran-1400.webp", "thumb": "img/lampe-livre-coran-700.webp", "price": "", "description": "Livre ouvert gravé de versets, lumière ambrée sur socle lumineux.", "visible": true}, {"id": "p2", "name": "Tableau lumineux pop art", "photo": "img/tableau-lumineux-liberte-1400.webp", "thumb": "img/tableau-lumineux-liberte-700.webp", "price": "", "description": "Tableau rétroéclairé aux couleurs pop art.", "visible": true}, {"id": "p3", "name": "Lampe diplôme personnalisée", "photo": "img/lampe-diplome-sara-1400.webp", "thumb": "img/lampe-diplome-sara-700.webp", "price": "", "description": "Toque et diplôme gravés avec un prénom : une idée cadeau.", "visible": true}, {"id": "p4", "name": "Lampe voiture de course", "photo": "img/lampe-voiture-rouge-1400.webp", "thumb": "img/lampe-voiture-rouge-700.webp", "price": "", "description": "Voiture de course gravée, lumière rouge.", "visible": true}], "gallery": [{"id": "g1", "photo": "img/lampe-livre-coran-1400.webp", "thumb": "img/lampe-livre-coran-700.webp", "caption": "Livre gravé · lumière ambrée"}, {"id": "g2", "photo": "img/tableau-lumineux-liberte-1400.webp", "thumb": "img/tableau-lumineux-liberte-700.webp", "caption": "Tableau lumineux pop art"}, {"id": "g3", "photo": "img/lampe-diplome-sara-1400.webp", "thumb": "img/lampe-diplome-sara-700.webp", "caption": "Diplôme personnalisé « Sara »"}, {"id": "g4", "photo": "img/lampe-voiture-rouge-1400.webp", "thumb": "img/lampe-voiture-rouge-700.webp", "caption": "Voiture de course · néon rouge"}]};
+const DEFAULT={"phone": "0561 12 29 11", "whatsapp": "213561122911", "kicker": "Fabricant de luminaires · Tlemcen", "lead": "Des créations lumineuses qui donnent à chaque pièce une ambiance douce, chaleureuse… parfaite.", "products_title": "Nos créations", "products_intro": "Photos de créations Perfect Room, et des exemples de modèles personnalisables. Prix sur demande : appelez ou écrivez-nous.", "about_intro": "À Tlemcen, Perfect Room fabrique des luminaires décoratifs : des lampes à plaque gravée posées sur un socle lumineux et des tableaux rétroéclairés. Une lumière douce pour une chambre, un salon, un bureau… ou pour faire plaisir.", "hours": [{"dow": 6, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 0, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 1, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 2, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 3, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 4, "closed": false, "open": "09:00", "close": "20:00"}, {"dow": 5, "closed": true, "open": "09:00", "close": "20:00"}], "products": [{"id": "p1", "name": "Lampe livre gravé", "photo": "img/lampe-livre-coran-1400.webp", "thumb": "img/lampe-livre-coran-700.webp", "price": "", "description": "Livre ouvert gravé de versets, lumière ambrée sur socle lumineux.", "visible": true}, {"id": "p2", "name": "Tableau lumineux pop art", "photo": "img/tableau-lumineux-liberte-1400.webp", "thumb": "img/tableau-lumineux-liberte-700.webp", "price": "", "description": "Tableau rétroéclairé aux couleurs pop art.", "visible": true}, {"id": "p3", "name": "Lampe diplôme personnalisée", "photo": "img/lampe-diplome-sara-1400.webp", "thumb": "img/lampe-diplome-sara-700.webp", "price": "", "description": "Toque et diplôme gravés avec un prénom : une idée cadeau.", "visible": true}, {"id": "p4", "name": "Lampe voiture de course", "photo": "img/lampe-voiture-rouge-1400.webp", "thumb": "img/lampe-voiture-rouge-700.webp", "price": "", "description": "Voiture de course gravée, lumière rouge.", "visible": true}, {"id": "p5", "name": "Néon prénom personnalisé", "photo": "img/exemple-neon-prenom-1400.webp", "thumb": "img/exemple-neon-prenom-700.webp", "price": "", "description": "Modèle personnalisable avec le prénom de votre choix.", "visible": true, "example": true}, {"id": "p6", "name": "Lampe photo gravée couple", "photo": "img/exemple-lampe-couple-1400.webp", "thumb": "img/exemple-lampe-couple-700.webp", "price": "", "description": "Lampe LED gravée d'un motif couple, modèle personnalisable.", "visible": true, "example": true}, {"id": "p7", "name": "Néon enseigne pour commerce", "photo": "img/exemple-neon-commerce-1400.webp", "thumb": "img/exemple-neon-commerce-700.webp", "price": "", "description": "Enseigne néon pour commerce (exemple « Café Palmier »), texte et couleurs à personnaliser.", "visible": true, "example": true}, {"id": "p8", "name": "Lampe veilleuse enfant", "photo": "img/exemple-veilleuse-enfant-1400.webp", "thumb": "img/exemple-veilleuse-enfant-700.webp", "price": "", "description": "Veilleuse LED gravée avec un prénom d'enfant, modèle personnalisable.", "visible": true, "example": true}], "gallery": [{"id": "g1", "photo": "img/lampe-livre-coran-1400.webp", "thumb": "img/lampe-livre-coran-700.webp", "caption": "Livre gravé · lumière ambrée"}, {"id": "g2", "photo": "img/tableau-lumineux-liberte-1400.webp", "thumb": "img/tableau-lumineux-liberte-700.webp", "caption": "Tableau lumineux pop art"}, {"id": "g3", "photo": "img/lampe-diplome-sara-1400.webp", "thumb": "img/lampe-diplome-sara-700.webp", "caption": "Diplôme personnalisé « Sara »"}, {"id": "g4", "photo": "img/lampe-voiture-rouge-1400.webp", "thumb": "img/lampe-voiture-rouge-700.webp", "caption": "Voiture de course · néon rouge"}]};
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -73,7 +73,19 @@ function liveStatus(H){
   }catch(e){}
 }
 render(DEFAULT);
-fetch(SB+'/rest/v1/perfect_room_content?id=eq.1&select=data',{headers:{apikey:KEY}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j[0]&&j[0].data)render(Object.assign({},DEFAULT,j[0].data))}).catch(()=>{});
+function mergeContent(remote){
+  const merged=Object.assign({},DEFAULT,remote||{});
+  const byId=new Map();
+  for(const p of (remote&&remote.products)||[]) if(p&&p.id) byId.set(p.id,p);
+  for(const p of DEFAULT.products||[]) if(p&&p.id&&!byId.has(p.id)) byId.set(p.id,p);
+  const ids=[];
+  for(const p of DEFAULT.products||[]) if(byId.has(p.id)) ids.push(p.id);
+  for(const p of (remote&&remote.products)||[]) if(p&&p.id&&!ids.includes(p.id)) ids.push(p.id);
+  merged.products=ids.map(id=>byId.get(id));
+  merged.products_intro=DEFAULT.products_intro;
+  return merged;
+}
+fetch(SB+'/rest/v1/perfect_room_content?id=eq.1&select=data',{headers:{apikey:KEY}}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j[0]&&j[0].data)render(mergeContent(j[0].data))}).catch(()=>{});
 
 /* ---------- Nav + bouton fixe ---------- */
 const nav=$('#nav'),sc=$('.sticky-call');
@@ -445,7 +457,9 @@ window.fillThumbs=function(list){
 };
 
 function kindOf(p){
+  if(p&&p.example) return 'Exemple de réalisation';
   const n=((p.name||'')+' '+(p.description||'')).toLowerCase();
+  if(/n[eé]on/.test(n)) return 'Néon personnalisé';
   if(/tableau|r[eé]tro/.test(n))return 'Tableau rétroéclairé';
   return 'Lampe LED gravée';
 }
@@ -466,7 +480,9 @@ function openProduct(p, rect){
   title.textContent=(p.name||'').toUpperCase();
   sub.textContent=kindOf(p)+(p.description?' · '+p.description:'');
   price.textContent=p.price||'Prix sur demande';
-  details.innerHTML=`<p>${esc(p.description||'')}</p><p>Création fabriquée à l'atelier Perfect Room, à Tlemcen. Dimensions, couleur de lumière et personnalisation (prénom, texte, motif) se précisent ensemble — rien n'est facturé sans confirmation par téléphone.</p>`;
+  details.innerHTML=p.example
+    ?`<p>${esc(p.description||'')}</p><p>Modèle personnalisable, fabriqué à l'atelier Perfect Room à Tlemcen. Le visuel est un exemple : prénom, texte, motif et couleur de lumière se précisent ensemble. Prix sur demande — rien n'est facturé sans confirmation par téléphone.</p>`
+    :`<p>${esc(p.description||'')}</p><p>Création fabriquée à l'atelier Perfect Room, à Tlemcen. Dimensions, couleur de lumière et personnalisation (prénom, texte, motif) se précisent ensemble — rien n'est facturé sans confirmation par téléphone.</p>`;
   img.src=p.photo||p.thumb||'';
   img.alt=p.name||'';
   $$('#productPage .pp-opt').forEach(b=>{
