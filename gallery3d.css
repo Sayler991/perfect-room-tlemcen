@@ -2,8 +2,8 @@
 
 #hall{
   position:relative;
-  background:#140e0c;
-  color:#f3ead8;
+  background:#f4f3f1;
+  color:#111;
   z-index:2;
 }
 #hallPin{
@@ -12,7 +12,7 @@
   height:100svh;
   height:100dvh;
   overflow:hidden;
-  background:#140e0c;
+  background:#f4f3f1;
 }
 #hallCanvas{
   display:block;
@@ -24,19 +24,20 @@
   transition:opacity .45s ease;
 }
 #hallCanvas:active{cursor:grabbing}
+#hallCanvas.over-frame{cursor:pointer}
 #hallSpacer{pointer-events:none}
 
 #hallLoader{
   position:absolute;inset:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#140e0c;color:#f3ead8;gap:.8rem;z-index:3;
+  background:#f4f3f1;color:#111;gap:.8rem;z-index:3;
   font-family:Inter,Outfit,system-ui,sans-serif;
   letter-spacing:.18em;text-transform:uppercase;font-weight:400;font-size:.78rem;
   transition:opacity .5s ease;
 }
 #hallLoader.out{opacity:0;pointer-events:none}
 #hallLoader .spin{
-  width:28px;height:28px;border:1px solid #4a3a30;border-top-color:#f3ead8;
+  width:28px;height:28px;border:1px solid #ddd;border-top-color:#111;
   border-radius:50%;animation:hallspin .8s linear infinite;
 }
 @keyframes hallspin{to{transform:rotate(360deg)}}
@@ -44,7 +45,7 @@
 #hallHint{
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
   z-index:3;font-family:Inter,Outfit,system-ui,sans-serif;
-  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#d8cbb8;
+  font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;color:#5e5e5e;
   pointer-events:none;opacity:.85;
   animation:hallhint 2.8s ease-in-out infinite;
 }
@@ -73,7 +74,10 @@ body.pp-open #hallHint,body.hall-flying #hallHint{opacity:0}
   background:#fff;border:1px solid #e6e6e6;padding:0 0 14px;
   text-align:left;color:#111;cursor:pointer;
   font-family:Inter,Outfit,system-ui,sans-serif;
+  transition:transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease, border-color .25s ease;
 }
+.hall-fb-card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(20,16,12,.08);border-color:#ccc}
+.hall-fb-card:active{transform:translateY(-2px) scale(.99)}
 .hall-fb-card img{width:100%;height:320px;object-fit:cover;background:#eee}
 .hall-fb-kind{display:block;padding:12px 12px 0;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:#777}
 .hall-fb-name{display:block;padding:4px 12px 0;font-size:.95rem}
@@ -85,7 +89,7 @@ body.pp-open #hallHint,body.hall-flying #hallHint{opacity:0}
 /* Nav claire pendant la galerie 3D */
 body.hall-active .ambient,
 body.hall-active .cursor-glow{opacity:0!important;visibility:hidden}
-body.hall-active{background:#f3f3f4}
+body.hall-active{background:#f4f3f1}
 body.hall-active .nav{
   background:rgba(243,243,244,.78);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -121,7 +125,7 @@ body.hall-active .nav-cart{color:#111}
 
 /* Fiche produit */
 #productPage{
-  position:fixed;inset:0;z-index:80;background:#f4f4f4;color:#111;
+  position:fixed;inset:0;z-index:80;background:#f4f3f1;color:#111;
   overflow:auto;-webkit-overflow-scrolling:touch;
   font-family:Inter,Outfit,system-ui,sans-serif;
   opacity:0;pointer-events:none;transform:none;
@@ -222,7 +226,7 @@ html.pp-open{overflow:hidden}
 #cartDrawer .cart-bg{flex:1;background:rgba(0,0,0,0);transition:background .3s}
 #cartDrawer.on .cart-bg{background:rgba(0,0,0,.35)}
 .cart-panel{
-  width:min(420px,100%);height:100%;background:#f4f4f4;color:#111;
+  width:min(420px,100%);height:100%;background:#f4f3f1;color:#111;
   font-family:Inter,Outfit,system-ui,sans-serif;
   transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
   display:flex;flex-direction:column;padding:18px 18px 24px;
@@ -276,3 +280,63 @@ body.pp-open .sticky-call{
 }
 
 #ia-neon,#creations,#atelier,#photos,#horaires,#contact,#avis,#top{scroll-margin-top:78px}
+
+/* Micro-interactions boutons / transitions fiche */
+.pp-back,.pp-chip,.pp-opt,.pp-qty button,#ppAdd,.pp-thumbs button,
+.nav-cart,body.hall-active .nav-call,#cartSubmit,.cart-close,.cart-rm,.pp-acc summary{
+  transition:transform .22s cubic-bezier(.16,1,.3,1), background .22s ease, border-color .22s ease,
+    opacity .22s ease, box-shadow .22s ease, color .22s ease;
+}
+.pp-opt:hover,.pp-chip:hover,.pp-thumbs button:hover{
+  transform:translateY(-2px);
+}
+#ppAdd:hover,#cartSubmit:hover,body.hall-active .nav-call:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 18px rgba(0,0,0,.16);
+}
+.pp-opt:active,#ppAdd:active,.pp-qty button:active,.nav-cart:active,
+.pp-back:active,#cartSubmit:active,body.hall-active .nav-call:active,
+.pp-thumbs button:active,.pp-chip:active{
+  transform:scale(.97);
+}
+
+/* Entrée en cascade de la fiche produit */
+#productPage.on .pp-visual,
+#productPage.on .pp-info > *{
+  animation:ppIn .7s cubic-bezier(.16,1,.3,1) both;
+}
+#productPage.on .pp-visual{animation-delay:.05s}
+#productPage.on .pp-info > *:nth-child(1){animation-delay:.12s}
+#productPage.on .pp-info > *:nth-child(2){animation-delay:.18s}
+#productPage.on .pp-info > *:nth-child(3){animation-delay:.24s}
+#productPage.on .pp-info > *:nth-child(4){animation-delay:.28s}
+#productPage.on .pp-info > *:nth-child(5){animation-delay:.32s}
+#productPage.on .pp-info > *:nth-child(6){animation-delay:.36s}
+#productPage.on .pp-info > *:nth-child(7){animation-delay:.40s}
+#productPage.on .pp-info > *:nth-child(8){animation-delay:.44s}
+#productPage.on .pp-info > *:nth-child(n+9){animation-delay:.48s}
+@keyframes ppIn{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:none}
+}
+
+@media(max-width:899px){
+  .pp-back{min-height:48px;padding:16px 20px;font-size:.78rem}
+  .pp-opt{min-height:44px;padding:.85rem 1.05rem}
+  .pp-qty button{width:48px;height:48px}
+  .pp-qty span{min-width:32px}
+  #ppAdd{min-height:52px;font-size:.78rem}
+  .nav-cart{width:44px;height:44px}
+  .pp-wrap{padding-bottom:108px;gap:1.4rem}
+  .pp-chip{padding:.55rem .8rem;min-height:40px}
+  .pp-acc summary{min-height:48px;padding:16px 0}
+  .hall-fb-card{flex-basis:min(80vw,320px)}
+  .hall-fb-card img{height:300px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #productPage.on .pp-visual,
+  #productPage.on .pp-info > *{animation:none}
+  .hall-fb-card,.pp-back,.pp-chip,.pp-opt,.pp-qty button,#ppAdd,.pp-thumbs button,
+  .nav-cart,body.hall-active .nav-call,#cartSubmit{transition:none!important}
+}

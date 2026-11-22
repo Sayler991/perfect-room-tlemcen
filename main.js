@@ -478,37 +478,11 @@ function openProduct(p, rect){
   page.hidden=false;
   document.documentElement.classList.add('pp-open');
   document.body.classList.add('pp-open');
-  // Le vol 3D a déjà amené la caméra au cadre : la fiche s'affiche en place
-  // (l'ancienne animation CSS du visuel cassait parfois la grille deux colonnes).
-  const vis=$('#ppVisual');
-  if(false&&rect&&rect.w>20&&rect.h>20&&!reduce){
-    vis.style.position='fixed';
-    vis.style.left=rect.x+'px';
-    vis.style.top=rect.y+'px';
-    vis.style.width=rect.w+'px';
-    vis.style.height=rect.h+'px';
-    vis.style.zIndex='2';
-    vis.style.margin='0';
-    vis.style.transition='none';
-    vis.classList.add('fly');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const slot=vis.parentElement.getBoundingClientRect();
-      // Destination : colonne gauche du wrap
-      const dest=document.querySelector('.pp-wrap')?.getBoundingClientRect();
-      const colW = dest && dest.width>700 ? (dest.width-64)/2 : dest?.width||innerWidth-32;
-      const left = dest ? dest.left : 16;
-      vis.style.transition='left .6s cubic-bezier(.2,.8,.2,1),top .6s cubic-bezier(.2,.8,.2,1),width .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1)';
-      vis.style.left=left+'px';
-      vis.style.top=(dest?dest.top:80)+'px';
-      vis.style.width=colW+'px';
-      vis.style.height='auto';
-      setTimeout(()=>{
-        vis.style.position='';vis.style.left='';vis.style.top='';vis.style.width='';vis.style.height='';
-        vis.style.transition='';vis.style.zIndex='';vis.classList.remove('fly');
-      },620);
-    }));
-  }
+  // Le fly-from-rect cassait la grille 2 colonnes (position:fixed sortait l'image du flux).
+  // La caméra 3D a déjà volé vers le cadre ; la fiche apparaît en cascade.
   if(window.PerfectHall&&PerfectHall.canvasOpacity)PerfectHall.canvasOpacity(0);
+  page.classList.remove('on');
+  void page.offsetWidth;
   requestAnimationFrame(()=>page.classList.add('on'));
   $('#ppBack').focus();
 }
