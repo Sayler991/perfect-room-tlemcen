@@ -38,8 +38,7 @@ function render(D){
     </article>`}).join('');
   // Galerie
   const gal=(D.gallery||[]).filter(g=>g.photo);
-  const galSec=document.getElementById('photos')||document.getElementById('galerie');
-  if(galSec)galSec.hidden=!gal.length;
+  $('#galerie').hidden=!gal.length;
   $('#gallery').innerHTML=gal.map((g,i)=>`<figure class="g reveal${i===0?' g-wide':''}"><button data-lb="gallery" data-i="${i}" aria-label="Agrandir la photo ${i+1}"><img loading="lazy" decoding="async" src="${esc(g.thumb||g.photo)}" alt="${esc(g.caption||'Création Perfect Room')}"></button>${g.caption?`<figcaption>${esc(g.caption)}</figcaption>`:''}</figure>`).join('');
   // Horaires
   const H=D.hours||[];
@@ -50,12 +49,7 @@ function render(D){
   const hr=$('#hoursRange');if(hr)hr.innerHTML=same?`${parseInt(openDays[0].open)}h<small>→</small>${parseInt(openDays[0].close)}h`:'Voir';
   liveStatus(H);
   observe();
-  const visible=(D.products||[]).filter(p=>p.visible!==false&&(p.photo||p.thumb));
-  window.PR_PRODUCTS=visible;
-  if(window.PerfectHall&&PerfectHall.setProducts)PerfectHall.setProducts(visible);
-  if(typeof window.fillThumbs==='function')window.fillThumbs(visible);
 }
-
 function mins(s){const m=/^(\d{1,2}):(\d{2})$/.exec(s||'');return m?+m[1]*60+ +m[2]:null}
 function liveStatus(H){
   try{
@@ -77,7 +71,7 @@ fetch(SB+'/rest/v1/perfect_room_content?id=eq.1&select=data',{headers:{apikey:KE
 
 /* ---------- Nav + bouton fixe ---------- */
 const nav=$('#nav'),sc=$('.sticky-call');
-const onScroll=()=>{const y=scrollY;nav.classList.toggle('scrolled',y>30&&!document.body.classList.contains('hall-active'));sc.classList.add('show')};
+const onScroll=()=>{const y=scrollY;nav.classList.toggle('scrolled',y>30);sc.classList.toggle('show',y>innerHeight*.5)};
 addEventListener('scroll',onScroll,{passive:true});onScroll();
 
 /* ---------- Compteurs ---------- */
@@ -412,216 +406,4 @@ $$('.neon-chip').forEach(chip=>{
 });
 })();
 
-/* ---------- Liens du menu : saut direct, sans traverser toute la galerie 3D au ralenti ---------- */
-document.addEventListener('click',e=>{
-  const a=e.target.closest('a[href^="#"]');
-  if(!a)return;
-  const id=a.getAttribute('href');
-  if(!id||id==='#')return;
-  const el=document.querySelector(id);
-  if(!el)return;
-  e.preventDefault();
-  const top=el.getBoundingClientRect().top+window.scrollY-78;
-  window.scrollTo(0, Math.max(0,top));
-});
-
-/* ---------- Fiche produit + panier (confirmation téléphone obligatoire) ---------- */
-(()=>{
-const page=$('#productPage'), img=$('#ppImg'), title=$('#ppTitle'), sub=$('#ppSub'), price=$('#ppPrice');
-const details=$('#ppDetails'), thumbs=$('#ppThumbs'), qtyEl=$('#ppQty');
-const drawer=$('#cartDrawer'), itemsUl=$('#cartItems'), emptyEl=$('#cartEmpty');
-const badge=$('#cartBadge'), phoneIn=$('#cartPhone'), errEl=$('#cartErr'), okEl=$('#cartOk');
-const form=$('#cartForm');
-if(!page)return;
-
-let current=null, qty=1, opts={format:'standard', fin:'atelier'};
-const cart=JSON.parse(sessionStorage.getItem('pr_cart')||'[]');
-
-function visibleProducts(){return (DATA.products||[]).filter(p=>p.visible!==false&&(p.photo||p.thumb))}
-window.fillThumbs=function(list){
-  if(!thumbs)return;
-  const arr=list||visibleProducts();
-  thumbs.innerHTML=arr.map(p=>`<button type="button" data-open="${esc(p.id)}" aria-label="${esc(p.name)}"><img src="${esc(p.thumb||p.photo)}" alt="${esc(p.name)}"></button>`).join('');
-};
-
-function kindOf(p){
-  const n=((p.name||'')+' '+(p.description||'')).toLowerCase();
-  if(/tableau|r[eé]tro/.test(n))return 'Tableau rétroéclairé';
-  return 'Lampe LED gravée';
-}
-function formatNote(){
-  if(!current)return;
-  const perso=opts.format==='perso'||opts.fin==='idee';
-  const base=current.price?esc(current.price):'Prix sur demande';
-  $('#ppNote').textContent=perso
-    ? 'Demande personnalisée — le prix et les dimensions se confirment par téléphone.'
-    : 'Prix et personnalisation sur demande. Fabrication à Tlemcen.';
-  price.textContent=base;
-}
-
-function openProduct(p, rect){
-  if(!p)return;
-  current=p; qty=1; opts={format:'standard', fin:'atelier'};
-  qtyEl.textContent='1';
-  title.textContent=(p.name||'').toUpperCase();
-  sub.textContent=kindOf(p)+(p.description?' · '+p.description:'');
-  price.textContent=p.price||'Prix sur demande';
-  details.innerHTML=`<p>${esc(p.description||'')}</p><p>Création fabriquée à l'atelier Perfect Room, à Tlemcen. Dimensions, couleur de lumière et personnalisation (prénom, texte, motif) se précisent ensemble — rien n'est facturé sans confirmation par téléphone.</p>`;
-  img.src=p.photo||p.thumb||'';
-  img.alt=p.name||'';
-  $$('#productPage .pp-opt').forEach(b=>{
-    const on=b.dataset.val===(b.dataset.opt==='format'?'standard':'atelier');
-    b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');
-  });
-  formatNote();
-  fillThumbs();
-  page.hidden=false;
-  document.documentElement.classList.add('pp-open');
-  document.body.classList.add('pp-open');
-  // Transition : l'image part du cadre 3D si on a un rectangle
-  const vis=$('#ppVisual');
-  if(rect&&rect.w>20&&rect.h>20&&!reduce){
-    vis.style.position='fixed';
-    vis.style.left=rect.x+'px';
-    vis.style.top=rect.y+'px';
-    vis.style.width=rect.w+'px';
-    vis.style.height=rect.h+'px';
-    vis.style.zIndex='2';
-    vis.style.margin='0';
-    vis.style.transition='none';
-    vis.classList.add('fly');
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const slot=vis.parentElement.getBoundingClientRect();
-      // Destination : colonne gauche du wrap
-      const dest=document.querySelector('.pp-wrap')?.getBoundingClientRect();
-      const colW = dest && dest.width>700 ? (dest.width-64)/2 : dest?.width||innerWidth-32;
-      const left = dest ? dest.left : 16;
-      vis.style.transition='left .6s cubic-bezier(.2,.8,.2,1),top .6s cubic-bezier(.2,.8,.2,1),width .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1)';
-      vis.style.left=left+'px';
-      vis.style.top=(dest?dest.top:80)+'px';
-      vis.style.width=colW+'px';
-      vis.style.height='auto';
-      setTimeout(()=>{
-        vis.style.position='';vis.style.left='';vis.style.top='';vis.style.width='';vis.style.height='';
-        vis.style.transition='';vis.style.zIndex='';vis.classList.remove('fly');
-      },620);
-    }));
-  }
-  if(window.PerfectHall&&PerfectHall.canvasOpacity)PerfectHall.canvasOpacity(0);
-  requestAnimationFrame(()=>page.classList.add('on'));
-  $('#ppBack').focus();
-}
-
-function closeProduct(){
-  page.classList.remove('on');
-  document.documentElement.classList.remove('pp-open');
-  document.body.classList.remove('pp-open');
-  setTimeout(()=>{page.hidden=true;}, reduce?0:400);
-  if(window.PerfectHall&&PerfectHall.closeProduct)PerfectHall.closeProduct();
-  else if(window.PerfectHall&&PerfectHall.canvasOpacity)PerfectHall.canvasOpacity(1);
-}
-
-document.addEventListener('hall:open-product',e=>{
-  const {product,rect}=e.detail||{};
-  openProduct(product, rect);
-});
-
-$('#ppBack').onclick=closeProduct;
-$('#ppSituation').onclick=closeProduct;
-$('#ppMinus').onclick=()=>{qty=Math.max(1,qty-1);qtyEl.textContent=qty};
-$('#ppPlus').onclick=()=>{qty=Math.min(9,qty+1);qtyEl.textContent=qty};
-page.addEventListener('click',e=>{
-  const opt=e.target.closest('.pp-opt');
-  if(opt){
-    const group=opt.dataset.opt;
-    $$(`.pp-opt[data-opt="${group}"]`).forEach(b=>{b.classList.remove('on');b.setAttribute('aria-pressed','false')});
-    opt.classList.add('on');opt.setAttribute('aria-pressed','true');
-    opts[group]=opt.dataset.val;
-    formatNote();
-  }
-  const th=e.target.closest('[data-open]');
-  if(th){
-    const p=visibleProducts().find(x=>x.id===th.dataset.open);
-    if(p) openProduct(p,null);
-  }
-});
-addEventListener('keydown',e=>{if(e.key==='Escape'&&!page.hidden){if(!drawer.hidden&&drawer.classList.contains('on'))closeCart();else closeProduct()}});
-
-function saveCart(){sessionStorage.setItem('pr_cart',JSON.stringify(cart))}
-function renderCart(){
-  const n=cart.reduce((s,i)=>s+i.qty,0);
-  if(badge){badge.dataset.n=n;badge.textContent=n?String(n):''}
-  if(!cart.length){
-    itemsUl.innerHTML='';emptyEl.hidden=false;form.hidden=true;
-  }else{
-    emptyEl.hidden=true;form.hidden=false;
-    itemsUl.innerHTML=cart.map((i,idx)=>`<li>
-      <img src="${esc(i.thumb||i.photo)}" alt="">
-      <div><h3>${esc(i.name)}</h3><p>${esc(i.price||'Prix sur demande')} · qté ${i.qty}${i.format==='perso'?' · personnalisé':''}${i.fin==='idee'?' · devis':''}</p></div>
-      <button type="button" class="cart-rm" data-rm="${idx}">Retirer</button>
-    </li>`).join('');
-  }
-}
-function openCart(){
-  drawer.hidden=false;requestAnimationFrame(()=>drawer.classList.add('on'));
-  renderCart();
-  if(okEl)okEl.hidden=true;
-}
-function closeCart(){
-  drawer.classList.remove('on');
-  setTimeout(()=>{drawer.hidden=true},300);
-}
-$('#ppAdd').onclick=()=>{
-  if(!current)return;
-  const found=cart.find(i=>i.id===current.id&&i.format===opts.format&&i.fin===opts.fin);
-  if(found) found.qty=Math.min(9,found.qty+qty);
-  else cart.push({id:current.id,name:current.name,photo:current.photo,thumb:current.thumb||current.photo,price:current.price||'',qty,format:opts.format,fin:opts.fin});
-  saveCart();renderCart();openCart();
-};
-$('#navCart')&&($('#navCart').onclick=openCart);
-$('#cartClose').onclick=closeCart;
-$('#cartBg').onclick=closeCart;
-itemsUl.addEventListener('click',e=>{
-  const b=e.target.closest('[data-rm]');
-  if(!b)return;cart.splice(+b.dataset.rm,1);saveCart();renderCart();
-});
-
-function validPhone(v){
-  const d=String(v||'').replace(/\D/g,'');
-  return d.length>=9 && d.length<=13;
-}
-form.addEventListener('submit',e=>{
-  e.preventDefault();
-  errEl.hidden=true;
-  if(!cart.length)return;
-  const raw=phoneIn.value;
-  if(!validPhone(raw)){errEl.hidden=false;phoneIn.focus();return;}
-  const lines=cart.map(i=>`• ${i.name} ×${i.qty}${i.format==='perso'?' (personnalisé)':''}${i.fin==='idee'?' (devis)':''}`);
-  const msg=encodeURIComponent(
-    'Bonjour Perfect Room, je souhaite commander :\n'+lines.join('\n')+
-    '\nTéléphone pour confirmation : '+raw.trim()+
-    '\nMerci de me rappeler pour confirmer.'
-  );
-  const wa=String(DATA.whatsapp||'').replace(/\D/g,'')||'213561122911';
-  // Confirmation faite : on ouvre WhatsApp avec le récapitulatif, le panier est vidé après
-  okEl.hidden=false;
-  okEl.textContent='Demande confirmée avec le numéro '+raw.trim()+' . Ouverture de WhatsApp…';
-  cart.splice(0,cart.length);saveCart();renderCart();
-  setTimeout(()=>{window.open('https://wa.me/'+wa+'?text='+msg,'_blank','noopener');},400);
-});
-
-renderCart();
-  if(window.PerfectHall&&PerfectHall.setProducts)PerfectHall.setProducts((DATA.products||[]).filter(p=>p.visible!==false&&(p.photo||p.thumb)));
-  fillThumbs();
-})();
-
-/* Si la galerie 3D arrive après le premier rendu, on lui renvoie les produits. */
-function pushProductsToHall(){
-  const visible=window.PR_PRODUCTS||(DATA.products||[]).filter(p=>p.visible!==false&&(p.photo||p.thumb));
-  window.PR_PRODUCTS=visible;
-  if(window.PerfectHall&&PerfectHall.setProducts)PerfectHall.setProducts(visible);
-}
-pushProductsToHall();
-[100,400,1000,2000].forEach(ms=>setTimeout(pushProductsToHall,ms));
-document.addEventListener('DOMContentLoaded',pushProductsToHall);
 })();
