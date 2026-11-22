@@ -2,8 +2,8 @@
 
 #hall{
   position:relative;
-  background:#f3f3f4;
-  color:#111;
+  background:#140e0c;
+  color:#f3ead8;
   z-index:2;
 }
 #hallPin{
@@ -12,7 +12,7 @@
   height:100svh;
   height:100dvh;
   overflow:hidden;
-  background:#f3f3f4;
+  background:#140e0c;
 }
 #hallCanvas{
   display:block;
@@ -29,14 +29,14 @@
 #hallLoader{
   position:absolute;inset:0;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#f3f3f4;color:#111;gap:.8rem;z-index:3;
+  background:#140e0c;color:#f3ead8;gap:.8rem;z-index:3;
   font-family:Inter,Outfit,system-ui,sans-serif;
   letter-spacing:.18em;text-transform:uppercase;font-weight:400;font-size:.78rem;
   transition:opacity .5s ease;
 }
 #hallLoader.out{opacity:0;pointer-events:none}
 #hallLoader .spin{
-  width:28px;height:28px;border:1px solid #ddd;border-top-color:#111;
+  width:28px;height:28px;border:1px solid #4a3a30;border-top-color:#f3ead8;
   border-radius:50%;animation:hallspin .8s linear infinite;
 }
 @keyframes hallspin{to{transform:rotate(360deg)}}
@@ -44,7 +44,7 @@
 #hallHint{
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);
   z-index:3;font-family:Inter,Outfit,system-ui,sans-serif;
-  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#6a6a6a;
+  font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:#d8cbb8;
   pointer-events:none;opacity:.85;
   animation:hallhint 2.8s ease-in-out infinite;
 }

@@ -478,9 +478,10 @@ function openProduct(p, rect){
   page.hidden=false;
   document.documentElement.classList.add('pp-open');
   document.body.classList.add('pp-open');
-  // Transition : l'image part du cadre 3D si on a un rectangle
+  // Le vol 3D a déjà amené la caméra au cadre : la fiche s'affiche en place
+  // (l'ancienne animation CSS du visuel cassait parfois la grille deux colonnes).
   const vis=$('#ppVisual');
-  if(rect&&rect.w>20&&rect.h>20&&!reduce){
+  if(false&&rect&&rect.w>20&&rect.h>20&&!reduce){
     vis.style.position='fixed';
     vis.style.left=rect.x+'px';
     vis.style.top=rect.y+'px';

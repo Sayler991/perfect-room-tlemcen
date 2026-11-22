@@ -1,37 +1,32 @@
-/* Galerie 3D immersive — inspirée de l'expérience « Websites in 2026 ».
-   Les photos des produits sont affichées telles quelles (non retouchées). */
+/* Galerie musée — couloir en première personne, murs de brique, cadres éclairés.
+   Photos des créations affichées telles quelles (non retouchées). */
 import * as THREE from 'three';
 
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const R = 24;             // rayon du mur (courbe ample)
-const COVE = 1.45;
-const WALL_H = 8.5;
-const CAM_DIST = 7.2;     // distance caméra → mur
-const CAM_Y = 1.95;
-const FRAME_Y = 3.15;
-const FRAME_H = 2.25;
-const THETA_START = -Math.PI * 0.55;
-const THETA_LEN = Math.PI * 1.15;
+const IS_TOUCH = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+
+const WALL_X = 1.92;
+const CEIL_Y = 3.28;
+const EYE_Y = 1.62;
+const FRAME_Y = 1.70;
+const FRAME_MAX_H = 1.48;
+const SPACING = 3.55;
+const START_Z = 4.05;
+const CAM_Z0 = -1.15;
 
 const power3InOut = t => t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
 const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
 const lerp = (a,b,t) => a + (b-a)*t;
 
-function hexColor(h, fallback='#ffb45c'){
-  const s = String(h||fallback).replace('#','');
-  const n = parseInt(s.length===3 ? s.replace(/./g,c=>c+c) : s, 16);
-  return new THREE.Color(((n>>16)&255)/255, ((n>>8)&255)/255, (n&255)/255);
-}
-
 function classify(p){
   const n = ((p.name||'')+' '+(p.description||'')).toLowerCase();
   if(/tableau|r[eé]tro[eé]?clair|pop art/.test(n))
-    return {kind:'Tableau rétroéclairé', collection:'tableaux', title:'TABLEAUX LUMINEUX', kicker:'Créations murales', glow:'#ff7ad9', enter:'Découvrir la collection'};
+    return {kind:'Tableau rétroéclairé', collection:'tableaux', title:'TABLEAUX LUMINEUX', kicker:'Créations murales', glow:'#ff7ad9'};
   if(/voiture|course/.test(n))
-    return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ff4d5e', enter:'Découvrir la collection'};
+    return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ff4d5e'};
   if(/dipl[oô]me/.test(n))
-    return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#e8f0ff', enter:'Découvrir la collection'};
-  return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ffb45c', enter:'Découvrir la collection'};
+    return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#dfe8ff'};
+  return {kind:'Lampe LED gravée', collection:'lampes', title:'LAMPES GRAVÉES', kicker:'Créations Perfect Room', glow:'#ffb45c'};
 }
 
 function webglInfo(){
@@ -50,15 +45,14 @@ function webglInfo(){
   }
 }
 
-function makeGlowTex(hex){
+function makeRadialTex(inner, mid, outer){
   const c = document.createElement('canvas');
   c.width = c.height = 256;
   const g = c.getContext('2d');
-  const grd = g.createRadialGradient(128,128,8,128,128,128);
-  grd.addColorStop(0, hex+'99');
-  grd.addColorStop(.35, hex+'55');
-  grd.addColorStop(.7, hex+'18');
-  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  const grd = g.createRadialGradient(128,128,4,128,128,128);
+  grd.addColorStop(0, inner);
+  grd.addColorStop(.4, mid);
+  grd.addColorStop(1, outer);
   g.fillStyle = grd;
   g.fillRect(0,0,256,256);
   const t = new THREE.CanvasTexture(c);
@@ -66,844 +60,1048 @@ function makeGlowTex(hex){
   return t;
 }
 
-function makeShadowTex(){
+function makePlacardTex(kind, name){
   const c = document.createElement('canvas');
-  c.width = 256; c.height = 128;
-  const g = c.getContext('2d');
-  const grd = g.createRadialGradient(128,20,4,128,40,120);
-  grd.addColorStop(0, 'rgba(0,0,0,.28)');
-  grd.addColorStop(.55, 'rgba(0,0,0,.08)');
-  grd.addColorStop(1, 'rgba(0,0,0,0)');
-  g.fillStyle = grd;
-  g.fillRect(0,0,256,128);
-  const t = new THREE.CanvasTexture(c);
-  return t;
-}
-
-function makeLabelTex(kind, name){
-  const c = document.createElement('canvas');
-  c.width = 1024; c.height = 256;
+  c.width = 768; c.height = 384;
   const ctx = c.getContext('2d');
-  ctx.clearRect(0,0,1024,256);
-  ctx.fillStyle = '#1a1a1a';
+  ctx.fillStyle = '#f3ead8';
+  ctx.fillRect(0,0,768,384);
+  ctx.strokeStyle = '#c4b392';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(14,14,740,356);
+  ctx.fillStyle = '#6a5a40';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
-  ctx.font = '500 42px Inter, Outfit, system-ui, sans-serif';
-  ctx.letterSpacing = '6px';
-  ctx.fillText(String(kind||'').toUpperCase(), 24, 36);
-  ctx.font = '400 64px Inter, Outfit, system-ui, sans-serif';
-  ctx.letterSpacing = '0px';
-  ctx.fillStyle = '#111';
-  ctx.fillText(String(name||''), 24, 110);
+  ctx.font = '500 36px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillText(String(kind||'').toUpperCase(), 48, 56);
+  ctx.fillStyle = '#2a2116';
+  ctx.font = '500 52px Inter, Outfit, system-ui, sans-serif';
+  const title = String(name||'');
+  // wrap if needed
+  if(title.length > 28) ctx.font = '500 40px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillText(title, 48, 130);
+  ctx.fillStyle = '#8a7a60';
+  ctx.font = '400 28px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillText('Perfect Room  ·  Tlemcen  ·  Prix sur demande', 48, 280);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
   t.needsUpdate = true;
   return t;
 }
 
-function makeFloorTitleTex(kicker, title, enter){
+function makeFloorTitleTex(kicker, title){
   const c = document.createElement('canvas');
   c.width = 2048; c.height = 700;
   const ctx = c.getContext('2d');
   ctx.clearRect(0,0,2048,700);
-  ctx.fillStyle = '#161616';
+  ctx.fillStyle = '#f0e6d2';
+  ctx.globalAlpha = 0.88;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font = '500 48px Inter, Outfit, system-ui, sans-serif';
-  ctx.letterSpacing = '14px';
-  ctx.fillText(String(kicker||'').toUpperCase(), 1024, 140);
-  ctx.font = '300 168px Inter, Outfit, system-ui, sans-serif';
-  ctx.letterSpacing = '10px';
+  ctx.font = '500 52px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillText(String(kicker||'').toUpperCase(), 1024, 160);
+  ctx.font = '300 150px Inter, Outfit, system-ui, sans-serif';
   const t = String(title||'').toUpperCase();
-  // Ajuster un peu si le titre est long
-  if(t.length > 22) ctx.font = '300 128px Inter, Outfit, system-ui, sans-serif';
-  ctx.fillText(t, 1024, 340);
-  ctx.font = '500 42px Inter, Outfit, system-ui, sans-serif';
-  ctx.letterSpacing = '12px';
-  ctx.fillText(String(enter||'DÉCOUVRIR LA COLLECTION').toUpperCase(), 1024, 520);
+  if(t.length > 22) ctx.font = '300 118px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillText(t, 1024, 380);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
 }
 
-function makeHallGeometry(){
-  const pts = [];
-  const floorR = R - COVE;
-  pts.push(new THREE.Vector2(0, 0));
-  for(let i=1;i<=20;i++) pts.push(new THREE.Vector2(floorR*(i/20), 0));
-  for(let i=1;i<=24;i++){
-    const a = (i/24)*Math.PI/2;
-    pts.push(new THREE.Vector2(floorR + COVE*Math.sin(a), COVE*(1-Math.cos(a))));
+function makeCtaTex(){
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 1280;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#0a0610';
+  ctx.fillRect(0,0,1024,1280);
+  const glow = ctx.createRadialGradient(512,620,30,512,620,560);
+  glow.addColorStop(0, 'rgba(255,170,70,.55)');
+  glow.addColorStop(.35, 'rgba(255,110,60,.18)');
+  glow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0,0,1024,1280);
+  ctx.strokeStyle = 'rgba(255,200,110,.55)';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(48,48,928,1184);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#ffc878';
+  ctx.font = '600 34px Inter, Outfit, system-ui, sans-serif';
+  ctx.shadowColor = 'rgba(255,180,70,1)';
+  ctx.shadowBlur = 22;
+  ctx.fillText('ATELIER NÉON  ·  TLEMCEN', 512, 360);
+  ctx.font = '300 96px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillStyle = '#ffe9b8';
+  ctx.shadowColor = 'rgba(255,190,80,1)';
+  ctx.shadowBlur = 36;
+  ctx.fillText('VOTRE NÉON', 512, 560);
+  ctx.fillText('SUR MESURE', 512, 690);
+  ctx.shadowBlur = 0;
+  ctx.font = '400 32px Inter, Outfit, system-ui, sans-serif';
+  ctx.fillStyle = '#e8d2a8';
+  ctx.fillText('Touchez pour imaginer le vôtre', 512, 920);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
+
+function avgGlow(image, fallback){
+  try{
+    const c = document.createElement('canvas');
+    c.width = c.height = 16;
+    const g = c.getContext('2d');
+    g.drawImage(image, 0, 0, 16, 16);
+    const d = g.getImageData(0,0,16,16).data;
+    let r=0,gv=0,b=0,n=0;
+    for(let i=0;i<d.length;i+=4){
+      const l = d[i]*0.25 + d[i+1]*0.45 + d[i+2]*0.3;
+      const w = 0.35 + l/255;
+      r+=d[i]*w; gv+=d[i+1]*w; b+=d[i+2]*w; n+=w;
+    }
+    return new THREE.Color(r/(n*255), gv/(n*255), b/(n*255));
+  }catch(e){
+    return new THREE.Color(fallback || '#ffb45c');
   }
-  pts.push(new THREE.Vector2(R, COVE + WALL_H));
-  // Salle circulaire complète : aucun bord ouvert n'apparaît à l'image
-  const geo = new THREE.LatheGeometry(pts, 128, 0, Math.PI * 2);
-  geo.computeVertexNormals();
-  return geo;
 }
 
-function hallVertexColors(geo){
-  // Léger dégradé : sol un peu plus sombre, mur très blanc
-  const pos = geo.attributes.position;
-  const colors = new Float32Array(pos.count*3);
-  const cFloor = new THREE.Color('#c5c5ca');
-  const cCove  = new THREE.Color('#e4e4e7');
-  const cWall  = new THREE.Color('#f6f6f6');
-  const tmp = new THREE.Color();
-  for(let i=0;i<pos.count;i++){
-    const y = pos.getY(i);
-    const t = clamp(y / (COVE + 0.4), 0, 1);
-    if(t < .01) tmp.copy(cFloor);
-    else if(t < 1) tmp.copy(cFloor).lerp(cCove, t);
-    else tmp.copy(cWall);
-    // Légère assombrisure vers le bas du mur pour la plinthe
-    colors[i*3]=tmp.r; colors[i*3+1]=tmp.g; colors[i*3+2]=tmp.b;
-  }
-  geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+function loadTexture(url, {srgb=false, repeat=null, wrap=true, aniso=8}={}){
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(url, tex => {
+      if(srgb) tex.colorSpace = THREE.SRGBColorSpace;
+      if(wrap){
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      }
+      if(repeat) tex.repeat.set(repeat[0], repeat[1]);
+      tex.anisotropy = aniso;
+      tex.needsUpdate = true;
+      resolve(tex);
+    }, undefined, reject);
+  });
 }
-
-function angleOf(t, a0, a1){ return a0 + t*(a1-a0); }
-
-function posOn(angle, radius, y){
-  // Lathe tourne autour de Y ; à theta=0 le profil est dans le plan X (x=radius, z=0)
-  return new THREE.Vector3(Math.cos(angle)*radius, y, Math.sin(angle)*radius);
-}
-
-function inwardQuat(angle, y){
-  // lookAt oriente le -Z vers la cible. On vise un point derrière le mur
-  // pour que le +Z (face du plan de la photo) soit tourné vers le centre, donc vers la caméra.
-  const p = posOn(angle, R, y);
-  const outward = posOn(angle, R + 1, y);
-  const q = new THREE.Quaternion();
-  const m = new THREE.Matrix4().lookAt(p, outward, new THREE.Vector3(0,1,0));
-  q.setFromRotationMatrix(m);
-  return q;
-}
-
-const state = {
-  ready:false,
-  mode:'none', // '3d' | 'fallback'
-  products:[],
-  frames:[],
-  titles:[],
-  targetP:0,
-  currentP:0,
-  flying:false,
-  productOpen:false,
-  openId:null,
-  savedP:0,
-  raf:0,
-  weak:false
-};
 
 function getEls(){
   return {
     section: document.getElementById('hall'),
     pin: document.getElementById('hallPin'),
     canvas: document.getElementById('hallCanvas'),
-    spacer: document.getElementById('hallSpacer'),
-    fallback: document.getElementById('hallFallback'),
     loader: document.getElementById('hallLoader'),
-    hint: document.getElementById('hallHint')
+    hint: document.getElementById('hallHint'),
+    spacer: document.getElementById('hallSpacer'),
+    fallback: document.getElementById('hallFallback')
   };
 }
 
-function setHallActive(on){
-  document.body.classList.toggle('hall-active', !!on);
-  document.body.classList.toggle('hall-3d', !!on && state.mode==='3d' && !state.productOpen);
+const state = {
+  ready: false,
+  mode: 'none',
+  products: [],
+  productKey: '',
+  frames: [],
+  currentP: 0,
+  targetP: 0,
+  vel: 0,
+  z0: CAM_Z0,
+  z1: 16,
+  flying: false,
+  fly: null,
+  savedP: 0,
+  dragging: false,
+  pointers: new Map(),
+  lastY: 0,
+  moved: 0,
+  renderer: null,
+  scene: null,
+  camera: null,
+  envMap: null,
+  clock: new THREE.Clock(),
+  raycaster: new THREE.Raycaster(),
+  pointer: new THREE.Vector2(),
+  dpr: 1,
+  quality: 'high',
+  weak: false,
+  fps: 60,
+  fpsFrames: 0,
+  fpsT: 0,
+  frameMats: [],
+  movingLight: null,
+  lookTarget: new THREE.Vector3(),
+  tmp: new THREE.Vector3(),
+  tmp2: new THREE.Vector3()
+};
+
+function productKey(list){
+  return (list||[]).map(p => p.id+':'+(p.photo||p.thumb||'')).join('|');
 }
 
-function scrollBounds(){
+function setSpacer(){
+  const {spacer} = getEls();
+  if(!spacer) return;
+  const n = Math.max(4, state.frames.length);
+  const vh = Math.max(220, 90 + n * 70);
+  spacer.style.height = vh + 'vh';
+}
+
+function scrollProgress(){
+  const {section, pin, spacer} = getEls();
+  if(!section || !pin || !spacer) return state.currentP;
+  const pinH = pin.offsetHeight || innerHeight;
+  const total = Math.max(1, spacer.offsetHeight - 1);
+  const scrolled = clamp(-section.getBoundingClientRect().top, 0, total);
+  return clamp(scrolled / total, 0, 1);
+}
+
+function syncScrollTo(p){
   const {section, spacer} = getEls();
-  if(!section||!spacer) return {start:0,end:1};
-  const start = section.offsetTop;
-  const end = start + Math.max(1, section.offsetHeight - innerHeight);
-  return {start, end};
+  if(!section || !spacer) return;
+  const total = Math.max(1, spacer.offsetHeight - 1);
+  const y = section.offsetTop + p * total;
+  window.scrollTo(0, y);
 }
 
-function progressFromScroll(){
-  const {start,end} = scrollBounds();
-  return clamp((scrollY - start)/(end-start), 0, 1);
-}
-
-function scrollToProgress(p, behavior){
-  const {start,end} = scrollBounds();
-  const y = start + clamp(p,0,1)*(end-start);
-  if(behavior==='instant' || REDUCE) scrollTo(0, y);
-  else scrollTo({top:y, behavior:'auto'});
-}
-
-function camPose(p){
-  const a0 = state.camA0 != null ? state.camA0 : THETA_START + 0.28;
-  const a1 = state.camA1 != null ? state.camA1 : THETA_START + THETA_LEN - 0.28;
-  const a = angleOf(p, a0, a1);
-  const camR = R - CAM_DIST;
-  // Sur mobile (format portrait) on vise un peu plus haut pour garder les cadres au centre
-  const portrait = (typeof camera !== 'undefined' && camera && camera.aspect < 0.85);
-  const lookY = portrait ? 2.05 : 2.05;
-  const pos = posOn(a, camR, portrait ? 2.05 : CAM_Y);
-  // Regard le long du mur : les cadres reculent vers la gauche, le plus proche à droite
-  const lookAhead = portrait ? -0.16 : -0.32;
-  const look = posOn(a + lookAhead, R - 1.2, lookY);
-  return {pos, look, angle:a, lookAhead};
-}
-
-function framePose(angle, w, h){
-  const p = posOn(angle, R - 0.14, FRAME_Y);
-  const q = inwardQuat(angle, FRAME_Y);
-  return {pos:p, quat:q, w, h};
-}
-
-function projectRect(camera, object, renderer){
-  const box = new THREE.Box3().setFromObject(object);
-  const corners = [
-    new THREE.Vector3(box.min.x,box.min.y,box.min.z),
-    new THREE.Vector3(box.min.x,box.min.y,box.max.z),
-    new THREE.Vector3(box.min.x,box.max.y,box.min.z),
-    new THREE.Vector3(box.min.x,box.max.y,box.max.z),
-    new THREE.Vector3(box.max.x,box.min.y,box.min.z),
-    new THREE.Vector3(box.max.x,box.min.y,box.max.z),
-    new THREE.Vector3(box.max.x,box.max.y,box.min.z),
-    new THREE.Vector3(box.max.x,box.max.y,box.max.z)
-  ];
-  const r = renderer.domElement.getBoundingClientRect();
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  const v = new THREE.Vector3();
-  for(const c of corners){
-    v.copy(c).project(camera);
-    const x = (v.x*.5+.5)*r.width + r.left;
-    const y = (-v.y*.5+.5)*r.height + r.top;
-    minX=Math.min(minX,x); maxX=Math.max(maxX,x);
-    minY=Math.min(minY,y); maxY=Math.max(maxY,y);
-  }
-  return {x:minX,y:minY,w:maxX-minX,h:maxY-minY};
+function hideLoader(){
+  const {loader} = getEls();
+  if(!loader) return;
+  loader.classList.add('out');
+  setTimeout(()=>{ loader.hidden = true; }, 520);
 }
 
 function buildFallback(products){
-  const {fallback, canvas, loader, spacer, hint} = getEls();
-  if(!fallback) return;
+  const {fallback, canvas, loader, hint, pin} = getEls();
   state.mode = 'fallback';
-  if(canvas) canvas.hidden = true;
-  if(loader) loader.hidden = true;
+  state.ready = true;
+  if(canvas) canvas.style.display = 'none';
   if(hint) hint.hidden = true;
-  if(spacer) spacer.style.height = '0px';
+  if(pin) pin.style.height = 'auto';
+  if(loader) { loader.classList.add('out'); loader.hidden = true; }
+  if(!fallback) return;
   fallback.hidden = false;
+  const cards = (products||[]).map(p => {
+    const meta = classify(p);
+    return `<button type="button" class="hall-fb-card" data-id="${p.id}">
+      <img src="${p.thumb||p.photo}" alt="${p.name||''}">
+      <span class="hall-fb-kind">${meta.kind}</span>
+      <span class="hall-fb-name">${p.name||''}</span>
+    </button>`;
+  }).join('');
   fallback.innerHTML = `
     <p class="hall-fb-kicker">Galerie Perfect Room</p>
-    <h2 class="hall-fb-title">Créations lumineuses</h2>
-    <div class="hall-fb-track" id="hallFbTrack">
-      ${products.map(p=>{
-        const meta = classify(p);
-        return `<button type="button" class="hall-fb-card" data-hall-product="${p.id}">
-          <img src="${p.thumb||p.photo}" alt="${(p.name||'').replace(/"/g,'')}">
-          <span class="hall-fb-kind">${meta.kind}</span>
-          <span class="hall-fb-name">${p.name||''}</span>
-        </button>`;
-      }).join('')}
+    <h2 class="hall-fb-title">Le musée des créations</h2>
+    <div class="hall-fb-track">
+      ${cards}
       <a class="hall-fb-card hall-fb-cta" href="#ia-neon">
-        <span class="hall-fb-cta-txt">Votre néon<br>sur mesure</span>
-        <span class="hall-fb-kind">Atelier IA</span>
-        <span class="hall-fb-name">Créer un néon</span>
+        <span class="hall-fb-kind">Atelier néon</span>
+        <span class="hall-fb-cta-txt">Votre néon sur mesure</span>
       </a>
     </div>`;
-  fallback.querySelectorAll('[data-hall-product]').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const id = btn.getAttribute('data-hall-product');
-      const p = state.products.find(x=>x.id===id);
-      if(p) document.dispatchEvent(new CustomEvent('hall:open-product',{detail:{product:p, rect:btn.getBoundingClientRect()}}));
+  fallback.querySelectorAll('[data-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = state.products.find(x => x.id === btn.getAttribute('data-id'));
+      if(p) document.dispatchEvent(new CustomEvent('hall:open-product', {detail:{product:p, rect:null}}));
     });
   });
 }
 
-let renderer, scene, camera, hallMat, shadowTex;
-let clock = {t:0};
-
-function disposeGroup(g){
-  if(!g) return;
-  g.traverse(obj=>{
-    if(obj.geometry) obj.geometry.dispose();
-    const mats = obj.material ? (Array.isArray(obj.material)?obj.material:[obj.material]) : [];
-    mats.forEach(m=>{
-      if(!m) return;
-      for(const k of Object.keys(m)){ if(m[k] && m[k].isTexture) m[k].dispose(); }
-      m.dispose();
-    });
-  });
-  if(g.parent) g.parent.remove(g);
-}
-
-async function waitFonts(){
-  try{ if(document.fonts&&document.fonts.ready) await document.fonts.ready; }catch(e){}
-}
-
-function loadTexture(url){
-  return new Promise((resolve,reject)=>{
-    const loader = new THREE.TextureLoader();
-    loader.load(url, tex=>{
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = 8;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      resolve(tex);
-    }, undefined, ()=>reject(new Error('tex '+url)));
-  });
-}
-
-function makeFrameGroup(product, tex, angle, weak){
-  const meta = classify(product);
-  const imgW = tex.image?.width || 1;
-  const imgH = tex.image?.height || 1;
-  const aspect = imgW/imgH;
-  let h = FRAME_H;
-  let w = h * aspect;
-  // Les photos paysage un peu moins hautes, les portraits un peu plus étroits
-  if(aspect > 1.15){ w = 2.7; h = w/aspect; }
-  else { w = Math.min(w, 2.05); h = w/aspect; }
-
-  const g = new THREE.Group();
-  g.userData = {product, meta, angle, isFrame:true, w, h};
-
-  // Cadre blanc mince (boîte)
-  const border = 0.055;
-  const depth = 0.045;
-  const frame = new THREE.Mesh(
-    new THREE.BoxGeometry(w+border*2, h+border*2, depth),
-    new THREE.MeshStandardMaterial({color:0xfbfbfb, roughness:.35, metalness:.04})
-  );
-  frame.position.z = -depth/2;
-  frame.castShadow = false;
-  g.add(frame);
-
-  // Photo (non retouchée)
-  const art = new THREE.Mesh(
-    new THREE.PlaneGeometry(w, h),
-    new THREE.MeshBasicMaterial({map:tex, side:THREE.DoubleSide})
-  );
-  art.position.z = 0.002;
-  art.userData.hit = true;
-  g.add(art);
-  g.userData.art = art;
-
-  // Halo lumineux derrière, sur le mur
-  if(!weak){
-    const glow = new THREE.Mesh(
-      new THREE.PlaneGeometry(w*2.6, h*2.4),
-      new THREE.MeshBasicMaterial({
-        map: makeGlowTex(meta.glow),
-        transparent:true,
-        depthWrite:false,
-        blending: THREE.AdditiveBlending,
-        opacity: .85
-      })
-    );
-    glow.position.z = -0.1;
-    g.add(glow);
-    const light = new THREE.PointLight(hexColor(meta.glow), 1.35, 6.5, 2);
-    light.position.set(0, 0, 0.55);
-    g.add(light);
-  }
-
-  // Ombre portée douce sous le cadre, sur le mur
-  const sh = new THREE.Mesh(
-    new THREE.PlaneGeometry(w*1.25, h*.55),
-    new THREE.MeshBasicMaterial({map:shadowTex, transparent:true, depthWrite:false, opacity:.7})
-  );
-  sh.position.set(0, -(h/2) - .15, -0.06);
-  g.add(sh);
-
-  // Étiquette sous le cadre
-  const labTex = makeLabelTex(meta.kind, product.name);
-  const lab = new THREE.Mesh(
-    new THREE.PlaneGeometry(Math.max(w, 1.5)*1.05, .38),
-    new THREE.MeshBasicMaterial({map:labTex, transparent:true, depthWrite:false})
-  );
-  lab.position.set(0, -(h/2) - .42, 0.01);
-  g.add(lab);
-
-  const pose = framePose(angle, w, h);
-  g.position.copy(pose.pos);
-  g.quaternion.copy(pose.quat);
-  return g;
-}
-
-function makeTitleGroup(meta, angle){
-  const g = new THREE.Group();
-  const tex = makeFloorTitleTex(meta.kicker, meta.title, meta.enter);
-  const mesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.4, 2.2),
-    new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false, depthTest:true, side:THREE.DoubleSide})
-  );
-  mesh.rotation.x = -Math.PI/2;
-  // Posé sur le sol, entre la caméra et le mur, assez loin pour un vrai effet de perspective
-  const p = posOn(angle, R - 5.0, 0.04);
-  g.position.copy(p);
-  // Après rotation X -90°, le « haut » du texte pointe vers -Z local.
-  // On oriente le groupe pour que le bas du texte soit vers le mur (plus loin de la caméra).
-  g.rotation.y = -angle - Math.PI/2;
-  g.add(mesh);
-  g.userData = {angle, collection: meta.collection};
-  return g;
-}
-
-function makeCtaGroup(angle, weak){
-  const g = new THREE.Group();
-  g.userData = {isCta:true, angle, isFrame:true, w:1.8, h:2.2};
-
-  const c = document.createElement('canvas');
-  c.width = 1024; c.height = 1280;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0,0,1024,1280);
-  // léger halo
-  const grd = ctx.createRadialGradient(512,560,40,512,560,600);
-  grd.addColorStop(0, '#ffe18a');
-  grd.addColorStop(.4, '#ffb45c');
-  grd.addColorStop(1, '#111');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0,0,1024,1280);
-  ctx.fillStyle = '#111c';
-  ctx.fillRect(0,0,1024,1280);
-  ctx.fillStyle = '#fff8e8';
-  ctx.textAlign = 'center';
-  ctx.font = '300 92px Inter, sans-serif';
-  ctx.letterSpacing = '8px';
-  ctx.fillText('VOTRE NÉON', 512, 520);
-  ctx.fillText('SUR MESURE', 512, 640);
-  ctx.font = '500 40px Inter, sans-serif';
-  ctx.letterSpacing = '10px';
-  ctx.fillText('ATELIER IA  ·  CRÉER', 512, 820);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-
-  const border = 0.055;
-  const frame = new THREE.Mesh(
-    new THREE.BoxGeometry(1.8+border*2, 2.2+border*2, 0.045),
-    new THREE.MeshStandardMaterial({color:0xfbfbfb, roughness:.35, metalness:.04})
-  );
-  frame.position.z = -0.022;
-  g.add(frame);
-  const art = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.8, 2.2),
-    new THREE.MeshBasicMaterial({map:tex, side:THREE.DoubleSide})
-  );
-  art.position.z = 0.002;
-  art.userData.hit = true;
-  g.add(art);
-  g.userData.art = art;
-  if(!weak){
-    const glow = new THREE.Mesh(
-      new THREE.PlaneGeometry(4.2, 4.4),
-      new THREE.MeshBasicMaterial({map:makeGlowTex('#ffb45c'), transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9})
-    );
-    glow.position.z = -0.1;
-    g.add(glow);
-    const light = new THREE.PointLight(0xffb45c, 1.6, 7, 2);
-    light.position.set(0,0,.6);
-    g.add(light);
-  }
-  const labTex = makeLabelTex('Atelier IA', 'Créer un néon');
-  const lab = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.9, .38),
-    new THREE.MeshBasicMaterial({map:labTex, transparent:true, depthWrite:false})
-  );
-  lab.position.set(0, -1.52, 0.01);
-  g.add(lab);
-
-  const pose = framePose(angle, 1.8, 2.2);
-  g.position.copy(pose.pos);
-  g.quaternion.copy(pose.quat);
-  return g;
-}
-
-function placeCamera(p, override){
-  if(!camera) return;
-  const pose = override || camPose(p);
-  camera.position.copy(pose.pos);
-  camera.lookAt(pose.look);
-  camera.userData.angle = pose.angle;
-}
-
-function flyTo(from, to, duration, onDone){
-  state.flying = true;
-  const t0 = performance.now();
-  const fromPos = from.pos.clone();
-  const fromLook = from.look.clone();
-  const toPos = to.pos.clone();
-  const toLook = to.look.clone();
-  const fromFov = camera.fov;
-  const toFov = to.fov != null ? to.fov : fromFov;
-  function step(now){
-    const t = clamp((now-t0)/duration, 0, 1);
-    const k = REDUCE ? 1 : power3InOut(t);
-    camera.position.lerpVectors(fromPos, toPos, k);
-    const look = new THREE.Vector3().lerpVectors(fromLook, toLook, k);
-    camera.lookAt(look);
-    camera.fov = lerp(fromFov, toFov, k);
-    camera.updateProjectionMatrix();
-    if(t<1) requestAnimationFrame(step);
-    else { state.flying = false; onDone && onDone(); }
-  }
-  requestAnimationFrame(step);
-}
-
-function closeupPose(frame){
-  // Caméra face au cadre, assez près pour qu'il occupe la moitié gauche
-  const angle = frame.userData.angle;
-  const dist = 3.15;
-  const pos = posOn(angle, R - dist, FRAME_Y);
-  // Décaler un peu vers la droite de l'écran (= le long de la tangente) pour laisser le cadre à gauche
-  const tangent = new THREE.Vector3(-Math.sin(angle), 0, Math.cos(angle)).multiplyScalar(0.85);
-  pos.add(tangent);
-  const look = frame.position.clone();
-  return {pos, look, angle, fov: 38};
-}
-
-async function rebuildFrames(products){
-  if(!scene) return;
-  state.frames.forEach(f=>disposeGroup(f));
-  state.titles.forEach(t=>disposeGroup(t));
-  state.frames = [];
-  state.titles = [];
-
-  // Grouper : lampes puis tableaux (parcours muséal), sans inventer de produits
-  const decorated = products.map(p=>({p, meta:classify(p)}));
-  const groups = {lampes:[], tableaux:[], autres:[]};
-  decorated.forEach(d=>{
-    if(d.meta.collection==='lampes') groups.lampes.push(d);
-    else if(d.meta.collection==='tableaux') groups.tableaux.push(d);
-    else groups.autres.push(d);
-  });
-  const ordered = [...groups.lampes, ...groups.tableaux, ...groups.autres];
-  const collections = [];
-  const pushCol = (key, items)=>{
-    if(!items.length) return;
-    collections.push({key, items, meta:items[0].meta});
+function makeEnv(renderer){
+  const scn = new THREE.Scene();
+  scn.background = new THREE.Color(0x2a1c14);
+  scn.add(new THREE.AmbientLight(0xffd2a0, 0.55));
+  scn.add(new THREE.HemisphereLight(0xffe6c8, 0x3a2214, 1.1));
+  const bulb = (color, x, y, z, i) => {
+    const l = new THREE.PointLight(color, i, 12, 2);
+    l.position.set(x,y,z);
+    scn.add(l);
   };
-  pushCol('lampes', groups.lampes);
-  pushCol('tableaux', groups.tableaux);
-  pushCol('autres', groups.autres);
+  bulb(0xfff0c8, 0, 3, 2, 4);
+  bulb(0xffb070, -3, 2, -1, 2);
+  bulb(0xffe0a0, 3, 2.5, 3, 2);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const rt = pmrem.fromScene(scn, 0.02);
+  pmrem.dispose();
+  return rt.texture;
+}
 
-  // Angles le long du mur
-  const nFrames = ordered.length + 1; // + CTA
-  // Espacement serré pour voir plusieurs cadres à la fois, comme dans la vidéo
-  const gap = 0.125;
-  const colGap = 0.10;
-  const span = gap * (nFrames - 1) + colGap * Math.max(0, collections.length - 1);
-  const mid = THETA_START + THETA_LEN * 0.42;
-  const a0 = mid - span / 2;
-  let a = a0;
+async function loadMaterials(aniso){
+  const wallRepeat = [8.5, 3.4]; // tuned after wall size
+  const [brickC, brickN, brickR, woodC, woodN, woodR, ceilC, ceilN, ceilR] = await Promise.all([
+    loadTexture('img/tex/brick-color.webp', {srgb:true, aniso}),
+    loadTexture('img/tex/brick-normal.webp', {srgb:false, aniso}),
+    loadTexture('img/tex/brick-rough.webp', {srgb:false, aniso}),
+    loadTexture('img/tex/wood-color.webp', {srgb:true, aniso}),
+    loadTexture('img/tex/wood-normal.webp', {srgb:false, aniso}),
+    loadTexture('img/tex/wood-rough.webp', {srgb:false, aniso}),
+    loadTexture('img/tex/ceil-color.webp', {srgb:true, aniso:4}),
+    loadTexture('img/tex/ceil-normal.webp', {srgb:false, aniso:4}),
+    loadTexture('img/tex/ceil-rough.webp', {srgb:false, aniso:4})
+  ]);
+  return {brickC, brickN, brickR, woodC, woodN, woodR, ceilC, ceilN, ceilR};
+}
 
-  await waitFonts();
+function applyRepeat(tex, u, v){
+  tex.repeat.set(u, v);
+  tex.needsUpdate = true;
+}
 
-  for(const col of collections){
-    const mid = a + gap * (col.items.length-1) / 2;
-    const title = makeTitleGroup(col.meta, mid);
-    scene.add(title);
-    state.titles.push(title);
-    for(const d of col.items){
-      try{
-        const tex = await loadTexture(d.p.thumb || d.p.photo);
-        const fr = makeFrameGroup(d.p, tex, a, state.weak);
-        scene.add(fr);
-        state.frames.push(fr);
-      }catch(e){
-        console.warn('Galerie 3D : image non chargée', d.p.name);
-      }
-      a += gap;
-    }
-    a += colGap; // respiration entre collections
+function buildRoom(scene, mats, length, quality){
+  const zMid = length * 0.5;
+  const wallLen = length + 4;
+  const wallH = CEIL_Y;
+
+  applyRepeat(mats.brickC, wallLen/1.15, wallH/0.72);
+  applyRepeat(mats.brickN, wallLen/1.15, wallH/0.72);
+  applyRepeat(mats.brickR, wallLen/1.15, wallH/0.72);
+  applyRepeat(mats.woodC, wallLen/2.0, (WALL_X*2)/2.0);
+  applyRepeat(mats.woodN, wallLen/2.0, (WALL_X*2)/2.0);
+  applyRepeat(mats.woodR, wallLen/2.0, (WALL_X*2)/2.0);
+  applyRepeat(mats.ceilC, wallLen/2.4, (WALL_X*2)/2.4);
+  applyRepeat(mats.ceilN, wallLen/2.4, (WALL_X*2)/2.4);
+  applyRepeat(mats.ceilR, wallLen/2.4, (WALL_X*2)/2.4);
+
+  const brickMat = new THREE.MeshStandardMaterial({
+    map: mats.brickC,
+    normalMap: mats.brickN,
+    roughnessMap: mats.brickR,
+    roughness: 0.92,
+    metalness: 0.02,
+    envMapIntensity: 0.25,
+    color: 0xffffff
+  });
+  brickMat.normalScale.set(0.85, 0.85);
+
+  const woodMat = new THREE.MeshStandardMaterial({
+    map: mats.woodC,
+    normalMap: mats.woodN,
+    roughnessMap: mats.woodR,
+    roughness: 0.28,
+    metalness: 0.08,
+    envMapIntensity: quality==='high' ? 0.85 : 0.45,
+    color: 0xffffff
+  });
+  woodMat.normalScale.set(0.4, 0.4);
+
+  const ceilMat = new THREE.MeshStandardMaterial({
+    map: mats.ceilC,
+    normalMap: mats.ceilN,
+    roughnessMap: mats.ceilR,
+    roughness: 0.86,
+    metalness: 0.0,
+    envMapIntensity: 0.15,
+    color: 0xc8c2ba,
+    emissive: 0x2a241c,
+    emissiveIntensity: 0.35
+  });
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(WALL_X*2-0.02, wallLen), woodMat);
+  floor.rotation.x = -Math.PI/2;
+  floor.position.set(0, 0, zMid);
+  floor.receiveShadow = quality==='high';
+  scene.add(floor);
+
+  const left = new THREE.Mesh(new THREE.PlaneGeometry(wallLen, wallH), brickMat);
+  left.rotation.y = Math.PI/2;
+  left.position.set(-WALL_X, wallH/2, zMid);
+  left.receiveShadow = quality==='high';
+  scene.add(left);
+
+  const right = new THREE.Mesh(new THREE.PlaneGeometry(wallLen, wallH), brickMat.clone());
+  // clone shares maps, flip so bricks aren't mirrored oddly
+  right.rotation.y = -Math.PI/2;
+  right.position.set(WALL_X, wallH/2, zMid);
+  right.receiveShadow = quality==='high';
+  scene.add(right);
+
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(WALL_X*2, wallLen), ceilMat);
+  ceil.rotation.x = Math.PI/2;
+  ceil.position.set(0, CEIL_Y, zMid);
+  scene.add(ceil);
+
+  // End wall
+  const end = new THREE.Mesh(new THREE.PlaneGeometry(WALL_X*2, wallH), brickMat);
+  end.position.set(0, wallH/2, length + 0.4);
+  end.receiveShadow = quality==='high';
+  scene.add(end);
+
+  // Entrance wall with opening behind camera (dark)
+  const start = new THREE.Mesh(new THREE.PlaneGeometry(WALL_X*2, wallH), new THREE.MeshStandardMaterial({
+    color: 0x1a120e, roughness: 0.9, metalness: 0, envMapIntensity: 0.1
+  }));
+  start.rotation.y = Math.PI;
+  start.position.set(0, wallH/2, -1.2);
+  scene.add(start);
+
+  // Baseboards
+  const boardMat = new THREE.MeshStandardMaterial({color:0x3a2a1c, roughness:0.6, metalness:0.05});
+  for(const x of [-WALL_X+0.02, WALL_X-0.02]){
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, wallLen), boardMat);
+    b.position.set(x, 0.06, zMid);
+    scene.add(b);
   }
-  const cta = makeCtaGroup(a, state.weak);
-  scene.add(cta);
-  state.frames.push(cta);
 
-  // La caméra commence juste avant le premier cadre et s'arrête juste après le dernier
-  const productFrames = state.frames.filter(f => !f.userData.isCta);
-  const firstA = (productFrames[0] && productFrames[0].userData.angle) || a0;
-  const lastA = a;
-  // On démarre déjà au cœur de la première collection (plusieurs cadres visibles)
-  state.camA0 = firstA + 0.34;
-  state.camA1 = lastA + 0.20;
-  if(!state.flying && !state.productOpen) placeCamera(state.currentP||0);
-
-  // Hauteur de défilement : assez pour une marche lente et ample
-  const {spacer} = getEls();
-  if(spacer) spacer.style.height = Math.max(200, 80 + nFrames*58) + 'vh';
-}
-
-function currentCollection(p){
-  if(!state.titles.length) return;
-  const pose = camPose(p);
-  let best=state.titles[0], bd=Infinity;
-  for(const t of state.titles){
-    const d = Math.abs(Math.atan2(
-      Math.sin(t.userData.angle - pose.angle),
-      Math.cos(t.userData.angle - pose.angle)
-    ));
-    if(d<bd){bd=d;best=t;}
+  // Ceiling track rails
+  const railMat = new THREE.MeshStandardMaterial({color:0x2a2a2a, roughness:0.4, metalness:0.7, envMapIntensity:0.5});
+  for(const x of [-0.55, 0.55]){
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.03, wallLen-1), railMat);
+    rail.position.set(x, CEIL_Y-0.04, zMid);
+    scene.add(rail);
   }
-  return best;
+
+  return {floor, brickMat, woodMat};
 }
 
-function renderLoop(){
-  state.raf = requestAnimationFrame(renderLoop);
-  if(!renderer || !scene || !camera) return;
-  if(!state.flying && !state.productOpen && state.mode==='3d'){
-    const tgt = state.targetP;
-    // Inertie élevée (marche muséale)
-    const ease = state.weak ? 0.12 : 0.055;
-    state.currentP += (tgt - state.currentP) * ease;
-    if(Math.abs(tgt - state.currentP) < 0.00015) state.currentP = tgt;
-    placeCamera(state.currentP);
-  }
-  renderer.render(scene, camera);
+function makeSpotCookie(){
+  return makeRadialTex('rgba(255,230,180,.95)', 'rgba(255,200,130,.35)', 'rgba(255,180,80,0)');
 }
 
-function onResize(){
-  if(!renderer||!camera) return;
-  const {pin, canvas} = getEls();
-  const w = (pin||canvas||document.body).clientWidth || innerWidth;
-  const h = (pin||canvas||document.body).clientHeight || innerHeight;
-  camera.aspect = w/Math.max(1,h);
-  camera.updateProjectionMatrix();
-  const pr = state.weak ? Math.min(1.15, devicePixelRatio||1) : Math.min(1.6, devicePixelRatio||1);
-  renderer.setPixelRatio(pr);
-  renderer.setSize(w, h, false);
-}
+function addSpotlightRig(scene, group, side, z, color, quality){
+  const xRail = side > 0 ? 0.55 : -0.55;
+  const fixtureMat = new THREE.MeshStandardMaterial({
+    color: 0x1a1a1a, roughness: 0.35, metalness: 0.75, envMapIntensity: 0.5
+  });
+  const bulbMat = new THREE.MeshStandardMaterial({
+    color: 0xffe8c0, emissive: new THREE.Color(color).lerp(new THREE.Color(0xfff0c8), 0.5), emissiveIntensity: 2.2,
+    roughness: 0.4, metalness: 0
+  });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.14, 10), fixtureMat);
+  body.position.set(xRail, CEIL_Y-0.16, z);
+  body.rotation.z = side > 0 ? 0.55 : -0.55;
+  body.rotation.x = 0.55;
+  scene.add(body);
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 8), bulbMat);
+  bulb.position.copy(body.position);
+  bulb.position.y -= 0.08;
+  scene.add(bulb);
 
-function pickFrame(ev){
-  if(!camera||!renderer||state.flying||state.productOpen) return null;
-  const rec = renderer.domElement.getBoundingClientRect();
-  const ndc = new THREE.Vector2(
-    ((ev.clientX-rec.left)/rec.width)*2-1,
-    -((ev.clientY-rec.top)/rec.height)*2+1
+  // Light cone (fake, cheap)
+  const coneH = 1.85;
+  const cone = new THREE.Mesh(
+    new THREE.ConeGeometry(0.62, coneH, 24, 1, true),
+    new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: quality==='high' ? 0.085 : 0.055,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    })
   );
-  const ray = new THREE.Raycaster();
-  ray.setFromCamera(ndc, camera);
-  const hits = ray.intersectObjects(state.frames, true);
-  for(const h of hits){
-    let o = h.object;
-    while(o && !o.userData.isFrame) o = o.parent;
-    if(o && o.userData.isFrame) return o;
+  // place cone from fixture toward the frame
+  const frameX = side * (WALL_X - 0.08);
+  const midX = (xRail + frameX) * 0.5;
+  cone.position.set(midX, (CEIL_Y-0.22 + FRAME_Y+0.4)*0.5, z);
+  const dir = new THREE.Vector3(frameX, FRAME_Y+0.15, z).sub(new THREE.Vector3(xRail, CEIL_Y-0.22, z)).normalize();
+  cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,-1,0), dir);
+  scene.add(cone);
+
+  // Wall wash behind the frame
+  const wash = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.7, 2.15),
+    new THREE.MeshBasicMaterial({
+      map: makeSpotCookie(),
+      color: color,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    })
+  );
+  wash.position.set(side * (WALL_X - 0.012), FRAME_Y, z);
+  wash.rotation.y = side > 0 ? -Math.PI/2 : Math.PI/2;
+  scene.add(wash);
+
+  // Floor pool
+  const pool = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.15, 1.6),
+    new THREE.MeshBasicMaterial({
+      map: makeSpotCookie(),
+      color: color,
+      transparent: true,
+      opacity: 0.22,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    })
+  );
+  pool.rotation.x = -Math.PI/2;
+  pool.position.set(side * 0.7, 0.015, z);
+  scene.add(pool);
+
+  return {cone, wash};
+}
+
+function buildFrame({scene, product, isCta, side, z, tex, glowColor, quality}){
+  const group = new THREE.Group();
+  const img = tex.image;
+  const aspect = (img && img.width && img.height) ? (img.width / img.height) : 0.75;
+  let fw, fh;
+  if(aspect >= 1){
+    fw = Math.min(1.55, FRAME_MAX_H * 1.05);
+    fh = fw / aspect;
+  }else{
+    fh = FRAME_MAX_H;
+    fw = fh * aspect;
   }
+  if(isCta){ fw = 1.05; fh = 1.32; }
+
+  const artMat = new THREE.MeshStandardMaterial({
+    map: tex,
+    emissive: glowColor,
+    emissiveMap: isCta ? null : tex,
+    emissiveIntensity: isCta ? 0.45 : 0.55,
+    roughness: 0.35,
+    metalness: 0.0,
+    envMapIntensity: 0.2
+  });
+  const art = new THREE.Mesh(new THREE.PlaneGeometry(fw, fh), artMat);
+  art.position.x = -0.012; // slightly in front of backboard in local +X later
+  group.add(art);
+
+  // Wooden / dark frame
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: 0x1c140e, roughness: 0.45, metalness: 0.15, envMapIntensity: 0.35
+  });
+  const t = 0.045, d = 0.06;
+  const pieces = [
+    new THREE.BoxGeometry(fw + t*2, t, d),
+    new THREE.BoxGeometry(fw + t*2, t, d),
+    new THREE.BoxGeometry(t, fh, d),
+    new THREE.BoxGeometry(t, fh, d)
+  ];
+  const pos = [
+    [0,  fh/2 + t/2, -0.005],
+    [0, -fh/2 - t/2, -0.005],
+    [-(fw/2 + t/2), 0, -0.005],
+    [ (fw/2 + t/2), 0, -0.005]
+  ];
+  pieces.forEach((geo,i)=>{
+    const m = new THREE.Mesh(geo, frameMat);
+    m.position.set(...pos[i]);
+    if(quality==='high') m.castShadow = true;
+    group.add(m);
+  });
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(fw+t*2, fh+t*2), new THREE.MeshStandardMaterial({
+    color:0x0c0a08, roughness:0.8, metalness:0
+  }));
+  back.position.z = -0.028;
+  group.add(back);
+
+  // Bloom sprite behind the neon
+  const bloom = new THREE.Mesh(
+    new THREE.PlaneGeometry(fw*1.7, fh*1.7),
+    new THREE.MeshBasicMaterial({
+      map: makeRadialTex('rgba(255,255,255,.9)','rgba(255,255,255,.25)','rgba(255,255,255,0)'),
+      color: glowColor,
+      transparent: true,
+      opacity: isCta ? 0.55 : 0.4,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
+    })
+  );
+  bloom.position.z = -0.04;
+  group.add(bloom);
+
+  // Place on wall: local +Z is the art facing into the corridor
+  const x = side * (WALL_X - 0.07);
+  group.position.set(x, FRAME_Y, z);
+  group.rotation.y = side > 0 ? -Math.PI/2 : Math.PI/2;
+  scene.add(group);
+
+  // Placard
+  let placard = null;
+  if(!isCta && product){
+    const meta = classify(product);
+    const ptex = makePlacardTex(meta.kind, product.name||'');
+    const pw = 0.38, ph = 0.19;
+    placard = new THREE.Mesh(new THREE.PlaneGeometry(pw, ph), new THREE.MeshStandardMaterial({
+      map: ptex, roughness: 0.55, metalness: 0.05, envMapIntensity: 0.2
+    }));
+    const plateSide = -side; // toward the entrance side of the frame, slightly toward corridor center
+    // Placard on the wall, a little after the frame (further down the corridor) and lower
+    const pz = z + 0.55;
+    const px = side * (WALL_X - 0.03);
+    placard.position.set(px, FRAME_Y - fh/2 - 0.18, pz);
+    placard.rotation.y = side > 0 ? -Math.PI/2 : Math.PI/2;
+    scene.add(placard);
+  }
+
+  addSpotlightRig(scene, group, side, z, glowColor, quality);
+
+  const rec = {
+    group, art, isCta, product: product||null, side, z, x, y: FRAME_Y,
+    w: fw, h: fh, glowColor, placard
+  };
+  art.userData.frame = rec;
+  group.userData.frame = rec;
+  return rec;
+}
+
+function addCollectionTitles(scene, frames){
+  const seen = new Set();
+  frames.forEach(f => {
+    if(f.isCta || !f.product) return;
+    const meta = classify(f.product);
+    if(seen.has(meta.collection)) return;
+    seen.add(meta.collection);
+    const tex = makeFloorTitleTex(meta.kicker, meta.title);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.3, 0.8), new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, opacity: 0.72, depthWrite: false, toneMapped: false
+    }));
+    mesh.rotation.x = -Math.PI/2;
+    mesh.rotation.z = Math.PI;
+    // on the floor, centered, a bit before the first work of that collection
+    mesh.position.set(0, 0.02, Math.max(2.6, f.z - 0.95));
+    scene.add(mesh);
+    // also a small wall title opposite the first frame
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.35), new THREE.MeshBasicMaterial({
+      map: tex, transparent: true, opacity: 0.55, depthWrite: false, toneMapped: false
+    }));
+    const wside = -f.side;
+    wall.position.set(wside * (WALL_X - 0.03), 2.55, f.z);
+    wall.rotation.y = wside > 0 ? -Math.PI/2 : Math.PI/2;
+    scene.add(wall);
+  });
+}
+
+function worldToScreen(renderer, camera, pos){
+  const v = pos.clone().project(camera);
+  const r = renderer.domElement.getBoundingClientRect();
+  return {
+    x: (v.x * 0.5 + 0.5) * r.width + r.left,
+    y: (-v.y * 0.5 + 0.5) * r.height + r.top
+  };
+}
+
+function poseAt(p){
+  const z = lerp(state.z0, state.z1, p);
+  // glance toward nearest frame
+  let lookX = 0, lookY = EYE_Y, lookZ = z + 2.4, w = 0;
+  let nearest = null, nd = 1e9;
+  for(const f of state.frames){
+    const d = Math.abs(f.z - z);
+    if(d < nd){ nd = d; nearest = f; }
+  }
+  if(nearest){
+    w = Math.exp(-(nd*nd)/(2.4*2.4)) * 0.45;
+    lookX = lerp(0, nearest.x * 0.28, w);
+    lookY = lerp(EYE_Y, nearest.y * 0.08 + EYE_Y * 0.92, w*0.4);
+    lookZ = lerp(z + 2.6, nearest.z + (nearest.z > z ? 0.2 : -0.1), w);
+  }
+  return {x:0, y:EYE_Y, z, lookX, lookY, lookZ, glance:w, nearest};
+}
+
+function applyPose(pose, bob=0){
+  const cam = state.camera;
+  cam.position.set(pose.x, pose.y + bob, pose.z);
+  state.lookTarget.set(pose.lookX, pose.lookY + bob, pose.lookZ);
+  cam.lookAt(state.lookTarget);
+}
+
+function startFlyTo(frame){
+  if(state.flying || REDUCE){
+    finishOpen(frame);
+    return;
+  }
+  const cam = state.camera;
+  const fromPos = cam.position.clone();
+  const fromQuat = cam.quaternion.clone();
+  const standX = frame.x - frame.side * 1.28;
+  const standY = EYE_Y;
+  const standZ = frame.z;
+  const toPos = new THREE.Vector3(standX, standY, standZ);
+  const dummy = cam.clone();
+  dummy.position.copy(toPos);
+  dummy.lookAt(new THREE.Vector3(frame.x, frame.y, frame.z));
+  const toQuat = dummy.quaternion.clone();
+  state.savedP = state.currentP;
+  state.flying = true;
+  document.body.classList.add('hall-flying');
+  state.fly = {
+    frame, fromPos, toPos, fromQuat, toQuat,
+    t0: performance.now(), dur: 1500
+  };
+}
+
+function finishOpen(frame){
+  state.flying = false;
+  document.body.classList.remove('hall-flying');
+  if(frame.isCta){
+    const el = document.getElementById('ia-neon');
+    if(el){
+      const top = el.getBoundingClientRect().top + window.scrollY - 78;
+      window.scrollTo(0, Math.max(0, top));
+    }
+    return;
+  }
+  if(!frame.product) return;
+  let rect = null;
+  try{
+    const corners = [
+      new THREE.Vector3(-frame.w/2,  frame.h/2, 0),
+      new THREE.Vector3( frame.w/2, -frame.h/2, 0)
+    ].map(v => {
+      frame.art.localToWorld(v);
+      return worldToScreen(state.renderer, state.camera, v);
+    });
+    const x = Math.min(corners[0].x, corners[1].x);
+    const y = Math.min(corners[0].y, corners[1].y);
+    rect = {x, y, w: Math.abs(corners[1].x-corners[0].x), h: Math.abs(corners[1].y-corners[0].y)};
+  }catch(e){ rect = null; }
+  document.dispatchEvent(new CustomEvent('hall:open-product', {detail:{product:frame.product, rect}}));
+}
+
+function tickFly(now){
+  const f = state.fly;
+  if(!f) return false;
+  const t = clamp((now - f.t0)/f.dur, 0, 1);
+  const k = power3InOut(t);
+  state.camera.position.lerpVectors(f.fromPos, f.toPos, k);
+  state.camera.quaternion.slerpQuaternions(f.fromQuat, f.toQuat, k);
+  if(t >= 1){
+    state.fly = null;
+    finishOpen(f.frame);
+    return false;
+  }
+  return true;
+}
+
+function pickFrame(clientX, clientY){
+  const {canvas} = getEls();
+  if(!canvas || !state.camera) return null;
+  const r = canvas.getBoundingClientRect();
+  state.pointer.set(((clientX-r.left)/r.width)*2-1, -((clientY-r.top)/r.height)*2+1);
+  state.raycaster.setFromCamera(state.pointer, state.camera);
+  const objs = state.frames.map(f => f.art);
+  const hits = state.raycaster.intersectObjects(objs, false);
+  if(hits.length) return hits[0].object.userData.frame || null;
   return null;
 }
 
-function openFrame(frame){
-  if(!frame || state.flying) return;
-  if(frame.userData.isCta){
-    const ia = document.getElementById('ia-neon');
-    if(ia) ia.scrollIntoView({behavior: REDUCE?'auto':'smooth'});
-    return;
+function onPointerDown(e){
+  if(state.flying || document.body.classList.contains('pp-open')) return;
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+  state.pointers.set(e.pointerId, {y:e.clientY, x:e.clientX});
+  state.dragging = true;
+  state.moved = 0;
+  state.lastY = e.clientY;
+  try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(err){}
+}
+
+function onPointerMove(e){
+  if(!state.dragging || !state.pointers.has(e.pointerId)) return;
+  const dy = e.clientY - state.lastY;
+  state.lastY = e.clientY;
+  state.moved += Math.abs(dy) + Math.abs(e.movementX||0);
+  // drag up = walk forward
+  const scale = 0.0015;
+  state.vel += -dy * scale;
+  state.targetP = clamp(state.targetP - dy * scale, 0, 1);
+}
+
+function onPointerUp(e){
+  const start = state.pointers.get(e.pointerId);
+  state.pointers.delete(e.pointerId);
+  if(state.pointers.size===0) state.dragging = false;
+  if(!start) return;
+  if(state.moved < 14){
+    const frame = pickFrame(e.clientX, e.clientY);
+    if(frame) startFlyTo(frame);
   }
-  const product = frame.userData.product;
-  if(!product) return;
-  state.savedP = state.currentP;
-  state.openId = product.id;
-  const from = {pos: camera.position.clone(), look: camPose(state.currentP).look, fov: camera.fov};
-  // look from current camera
-  const dir = new THREE.Vector3();
-  camera.getWorldDirection(dir);
-  from.look = camera.position.clone().add(dir);
-  const to = closeupPose(frame);
-  document.body.classList.add('hall-flying');
-  flyTo(from, to, 1500, ()=>{
-    const rect = projectRect(camera, frame.userData.art || frame, renderer);
-    document.dispatchEvent(new CustomEvent('hall:open-product',{detail:{product, rect, frame}}));
-    state.productOpen = true;
-    document.body.classList.remove('hall-flying');
-  });
 }
 
-function closeProductFromHall(){
-  if(!state.productOpen && !state.flying) return;
-  state.productOpen = false;
-  state.openId = null;
-  document.body.classList.remove('pp-open');
-  const {canvas} = getEls();
-  if(canvas) canvas.style.opacity = '1';
-  const from = {pos: camera.position.clone(), look: camera.position.clone().add(new THREE.Vector3(0,0,-1)), fov: camera.fov};
-  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-  from.look = camera.position.clone().add(dir);
-  const to = camPose(state.savedP);
-  to.fov = 46;
-  placeCamera(state.savedP); // will be overwritten by fly
-  camera.position.copy(from.pos);
-  camera.lookAt(from.look);
-  flyTo(from, to, 1100, ()=>{
-    camera.fov = 46;
-    camera.updateProjectionMatrix();
-    state.currentP = state.savedP;
-    state.targetP = state.savedP;
-    scrollToProgress(state.savedP, 'instant');
-    setHallActive(progressFromScroll()<1 && scrollY < scrollBounds().end);
-  });
+function onWheel(e){
+  if(state.flying || document.body.classList.contains('pp-open')) return;
+  const {pin, section} = getEls();
+  if(!pin || !section) return;
+  const r = pin.getBoundingClientRect();
+  const inView = r.top <= 1 && r.bottom >= innerHeight*0.5;
+  if(!inView) return;
+  // If we're mid-corridor, take over the wheel so the walk feels tight
+  const atStart = state.currentP <= 0.002 && e.deltaY < 0;
+  const atEnd = state.currentP >= 0.998 && e.deltaY > 0;
+  if(atStart || atEnd) return; // let the page scroll take over
+  e.preventDefault();
+  const step = (e.deltaY) * 0.00028;
+  state.vel += step;
+  state.targetP = clamp(state.targetP + step, 0, 1);
+  syncScrollTo(state.targetP);
 }
 
-function bindInput(){
-  const {canvas, pin} = getEls();
-  if(!canvas) return;
-  let dragging=false, sx=0, sy=0, sp=0, moved=false, pointerId=null;
-
-  canvas.addEventListener('pointerdown', e=>{
-    if(state.productOpen||state.flying) return;
-    dragging = true; moved=false; sx=e.clientX; sy=e.clientY; sp=state.targetP; pointerId=e.pointerId;
-    try{ canvas.setPointerCapture(e.pointerId); }catch(_){}
-  });
-  canvas.addEventListener('pointermove', e=>{
-    if(!dragging) {
-      const f = pickFrame(e);
-      canvas.style.cursor = f ? 'pointer' : 'grab';
-      return;
-    }
-    const dx = e.clientX-sx, dy = e.clientY-sy;
-    if(Math.abs(dx)+Math.abs(dy)>14) moved = true;
-    // Glisser horizontal (et vertical) fait avancer la caméra
-    const delta = (dx - dy) / Math.max(innerWidth, 1) * -0.55;
-    state.targetP = clamp(sp + delta, 0, 1);
-    scrollToProgress(state.targetP, 'instant');
-  });
-  const end = e=>{
-    if(!dragging) return;
-    dragging=false;
-    try{ canvas.releasePointerCapture(pointerId); }catch(_){}
-    if(!moved){
-      const f = pickFrame(e);
-      if(f) openFrame(f);
-    }
-  };
-  canvas.addEventListener('pointerup', end);
-  canvas.addEventListener('pointercancel', end);
-
-  addEventListener('scroll', ()=>{
-    if(state.productOpen||state.flying) return;
-    state.targetP = progressFromScroll();
-    const {start,end} = scrollBounds();
-    const on = scrollY < end - 8 && scrollY + innerHeight > start + 8;
-    setHallActive(on && !state.productOpen);
-  }, {passive:true});
-
-  addEventListener('keydown', e=>{
-    if(state.productOpen||state.mode!=='3d') return;
-    const {section} = getEls();
-    if(!section) return;
+function onKey(e){
+  if(state.flying || document.body.classList.contains('pp-open')) return;
+  const tag = (e.target && e.target.tagName) || '';
+  if(/INPUT|TEXTAREA|SELECT/.test(tag) || e.target.isContentEditable) return;
+  const {section} = getEls();
+  if(section){
     const r = section.getBoundingClientRect();
-    if(r.bottom<=0 || r.top>=innerHeight) return;
-    if(e.key==='ArrowRight' || e.key==='ArrowDown'){
-      e.preventDefault();
-      state.targetP = clamp(state.targetP + 0.08, 0, 1);
-      scrollToProgress(state.targetP);
-    }else if(e.key==='ArrowLeft' || e.key==='ArrowUp'){
-      e.preventDefault();
-      state.targetP = clamp(state.targetP - 0.08, 0, 1);
-      scrollToProgress(state.targetP);
-    }
-  });
-
-  addEventListener('resize', onResize);
+    if(r.bottom < 80 || r.top > innerHeight-80) return;
+  }
+  let dir = 0;
+  if(e.key==='ArrowDown' || e.key==='ArrowRight' || e.key==='s' || e.key==='S') dir = 1;
+  if(e.key==='ArrowUp' || e.key==='ArrowLeft' || e.key==='w' || e.key==='W') dir = -1;
+  if(!dir) return;
+  e.preventDefault();
+  state.vel += dir * 0.008;
+  state.targetP = clamp(state.targetP + dir * 0.008, 0, 1);
+  syncScrollTo(state.targetP);
 }
 
-async function init3D(){
-  const {canvas, loader, fallback, hint} = getEls();
-  const info = webglInfo();
-  if(!info.ok || REDUCE){
-    buildFallback(state.products);
-    if(loader) loader.hidden = true;
-    setHallActive(false);
-    document.body.classList.add('hall-fallback');
+function attachInput(){
+  const {canvas, pin} = getEls();
+  const el = canvas || pin;
+  if(!el) return;
+  el.addEventListener('pointerdown', onPointerDown);
+  el.addEventListener('pointermove', onPointerMove);
+  el.addEventListener('pointerup', onPointerUp);
+  el.addEventListener('pointercancel', onPointerUp);
+  window.addEventListener('wheel', onWheel, {passive:false});
+  window.addEventListener('keydown', onKey);
+}
+
+function adaptQuality(dt){
+  state.fpsT += dt;
+  state.fpsFrames++;
+  if(state.fpsT < 1) return;
+  state.fps = state.fpsFrames / state.fpsT;
+  state.fpsFrames = 0;
+  state.fpsT = 0;
+  if(state.quality==='high' && state.fps < 26){
+    state.quality = 'medium';
+    state.dpr = 1;
+    if(state.renderer){
+      state.renderer.setPixelRatio(1);
+      state.renderer.shadowMap.enabled = false;
+    }
+  }else if(state.quality==='medium' && state.fps < 22){
+    state.quality = 'low';
+    state.dpr = 0.85;
+    if(state.renderer) state.renderer.setPixelRatio(0.85);
+  }
+}
+
+function animate(){
+  if(!state.renderer || !state.scene || !state.camera) return;
+  requestAnimationFrame(animate);
+  if(document.hidden) return;
+  const dt = Math.min(0.05, state.clock.getDelta());
+  const now = performance.now();
+
+  if(tickFly(now)){
+    state.renderer.render(state.scene, state.camera);
     return;
   }
-  state.weak = info.weak;
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color('#f3f3f4');
-  // Léger brouillard pour adoucir le lointain, très clair
-  scene.fog = new THREE.Fog('#f3f3f4', 18, 42);
+  if(document.body.classList.contains('pp-open')){
+    // keep last frame; no need to render every tick at full cost
+    return;
+  }
 
-  camera = new THREE.PerspectiveCamera(46, 16/9, 0.1, 80);
-  renderer = new THREE.WebGLRenderer({
-    canvas, antialias: !state.weak, alpha:false, powerPreference:'high-performance'
+  // Blend scroll-driven target with inertia
+  const sp = scrollProgress();
+  if(!state.dragging && Math.abs(state.vel) < 0.0008){
+    // gently follow the page scroll when the user is scrolling the spacer
+    state.targetP = lerp(state.targetP, sp, 0.15);
+  }
+  state.vel *= REDUCE ? 0.6 : 0.92;
+  state.targetP = clamp(state.targetP + state.vel, 0, 1);
+  state.currentP = lerp(state.currentP, state.targetP, REDUCE ? 1 : 0.14);
+
+  const pose = poseAt(state.currentP);
+  const speed = Math.min(1, Math.abs(state.vel)*40 + Math.abs(state.targetP-state.currentP)*8);
+  const bob = (REDUCE || speed < 0.04) ? 0 : Math.sin(pose.z * 5.2) * 0.012 * speed;
+  applyPose(pose, bob);
+
+  if(state.movingLight){
+    state.movingLight.position.set(0, CEIL_Y-0.4, pose.z + 0.8);
+  }
+
+  adaptQuality(dt);
+  state.renderer.render(state.scene, state.camera);
+}
+
+function onResize(){
+  if(!state.renderer || !state.camera) return;
+  const {canvas, pin} = getEls();
+  const w = (pin||canvas).clientWidth || innerWidth;
+  const h = (pin||canvas).clientHeight || innerHeight;
+  state.camera.aspect = w / Math.max(1,h);
+  state.camera.updateProjectionMatrix();
+  state.renderer.setSize(w, h, false);
+}
+
+async function init3D(products){
+  const {canvas, pin} = getEls();
+  const info = webglInfo();
+  if(!info.ok) throw new Error('no webgl');
+  state.weak = info.weak;
+  state.quality = (state.weak || IS_TOUCH) ? 'medium' : 'high';
+  state.dpr = state.weak ? 1 : Math.min(window.devicePixelRatio||1, IS_TOUCH ? 1.25 : 1.5);
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas, antialias: state.quality==='high' && !state.weak, alpha:false, powerPreference:'high-performance'
   });
+  renderer.setPixelRatio(state.dpr);
+  renderer.setClearColor(0x140e0c, 1);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
-  renderer.setClearColor('#f3f3f4', 1);
+  renderer.shadowMap.enabled = state.quality==='high' && !state.weak;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  state.renderer = renderer;
 
-  // Éclairage muséal doux, assez fort pour un mur blanc propre
-  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xdadadd, 1.05));
-  const key = new THREE.DirectionalLight(0xffffff, 0.45);
-  key.position.set(-4, 12, 6);
-  scene.add(key);
-  const fill = new THREE.DirectionalLight(0xfff7ee, 0.28);
-  fill.position.set(8, 5, -2);
+  const w = (pin||canvas).clientWidth || innerWidth;
+  const h = (pin||canvas).clientHeight || innerHeight;
+  renderer.setSize(w, h, false);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x140e0c);
+  scene.fog = new THREE.FogExp2(0x1a120e, 0.036);
+  state.scene = scene;
+
+  const camera = new THREE.PerspectiveCamera(62, w/Math.max(1,h), 0.08, 60);
+  camera.position.set(0, EYE_Y, CAM_Z0);
+  state.camera = camera;
+
+  const env = makeEnv(renderer);
+  scene.environment = env;
+  state.envMap = env;
+
+  const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy?.() || 4);
+  const mats = await loadMaterials(aniso);
+
+  const list = products || state.products || [];
+  const n = (products||state.products||[]).length + 1; // + CTA
+  const lastZ = START_Z + (n-1)*SPACING;
+  const length = lastZ + 3.2;
+  state.z0 = CAM_Z0;
+  state.z1 = lastZ + 1.15;
+
+  buildRoom(scene, mats, length, state.quality);
+
+  // Lights
+  scene.add(new THREE.HemisphereLight(0xffe6c4, 0x3a2818, 0.55));
+  scene.add(new THREE.AmbientLight(0x4a382c, 0.38));
+  const fill = new THREE.PointLight(0xffd8a8, 0.55, 18, 1.4);
+  fill.position.set(0, 1.8, length*0.45);
   scene.add(fill);
-
-  const hallGeo = makeHallGeometry();
-  hallVertexColors(hallGeo);
-  // MeshBasic : éclairage constant, mur blanc et sol gris clair comme dans la vidéo
-  hallMat = new THREE.MeshBasicMaterial({
-    vertexColors: true,
-    side: THREE.DoubleSide
-  });
-  const hall = new THREE.Mesh(hallGeo, hallMat);
-  hall.receiveShadow = false;
-  scene.add(hall);
-
-  // Caps aux extrémités (murs blancs discrets) pour éviter de voir le vide
-  const capMat = new THREE.MeshStandardMaterial({color:0xf5f5f5, roughness:.95, metalness:0});
-  const capGeo = new THREE.PlaneGeometry(R*1.05, COVE+WALL_H+1);
-  // pas indispensable si les angles restent hors champ
-
-  shadowTex = makeShadowTex();
-
-  placeCamera(0);
-  onResize();
-  bindInput();
-  await rebuildFrames(state.products);
-  if(loader){
-    loader.classList.add('out');
-    setTimeout(()=>{loader.hidden=true;}, 500);
+  const key = new THREE.DirectionalLight(0xffe2b8, 0.22);
+  key.position.set(0.35, 2.8, 2);
+  if(renderer.shadowMap.enabled){
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.camera.near = 0.5;
+    key.shadow.camera.far = 30;
+    key.shadow.camera.left = -4;
+    key.shadow.camera.right = 4;
+    key.shadow.camera.top = 6;
+    key.shadow.camera.bottom = -2;
+    key.shadow.bias = -0.001;
   }
-  if(hint) hint.hidden = false;
-  if(fallback) fallback.hidden = true;
+  scene.add(key);
+
+  const moving = new THREE.PointLight(0xffe0b0, 0.7, 8, 2);
+  moving.position.set(0, CEIL_Y-0.4, 2);
+  scene.add(moving);
+  state.movingLight = moving;
+
+  // Frames
+  state.frames = [];
+  const loader = new THREE.TextureLoader();
+  const loadArt = (url) => new Promise((res,rej)=>loader.load(url, t=>{
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = aniso;
+    t.needsUpdate = true;
+    res(t);
+  }, undefined, rej));
+
+  const sorted = [...list].sort((a,b)=>{
+    const ca = classify(a).collection, cb = classify(b).collection;
+    if(ca===cb) return 0;
+    return ca==='lampes' ? -1 : 1;
+  });
+  for(let i=0;i<sorted.length;i++){
+    const p = sorted[i];
+    const side = (i % 2 === 0) ? 1 : -1; // start on the right wall
+    const z = START_Z + i*SPACING;
+    const url = p.photo || p.thumb;
+    let tex;
+    try{ tex = await loadArt(url); }
+    catch(e){ continue; }
+    const glow = avgGlow(tex.image, classify(p).glow);
+    const rec = buildFrame({scene, product:p, isCta:false, side, z, tex, glowColor:glow, quality:state.quality});
+    state.frames.push(rec);
+  }
+  // CTA at the end, slightly centered on the right then a bit inward? Keep on a wall.
+  {
+    const i = list.length;
+    const side = (i % 2 === 0) ? 1 : -1;
+    const z = START_Z + i*SPACING;
+    const tex = makeCtaTex();
+    const rec = buildFrame({scene, product:null, isCta:true, side, z, tex, glowColor:new THREE.Color('#ffb45c'), quality:state.quality});
+    state.frames.push(rec);
+  }
+
+  addCollectionTitles(scene, state.frames);
+  setSpacer();
+  attachInput();
+  addEventListener('resize', onResize, {passive:true});
+  addEventListener('scroll', () => {
+    if(state.flying || state.dragging || document.body.classList.contains('pp-open')) return;
+    // When the user scrolls the page naturally, follow it
+  }, {passive:true});
+
   state.mode = '3d';
   state.ready = true;
-  state.targetP = progressFromScroll();
-  state.currentP = state.targetP;
-  setHallActive(true);
-  if(!state.raf) renderLoop();
+  applyPose(poseAt(0), 0);
+  hideLoader();
+  const {hint} = getEls();
+  if(hint) hint.textContent = 'Défilez pour avancer dans le musée · touchez un cadre';
+  animate();
+  onResize();
 }
 
-function productsKey(list){
-  return (list||[]).map(p=>[p.id,p.name,p.photo,p.thumb,p.price,p.description].join('|')).join('~');
-}
-function setProducts(products){
-  const list = (products||[]).filter(p=>p && p.visible!==false && (p.photo||p.thumb)).map(p=>({
-    id: p.id,
-    name: p.name,
-    description: p.description||'',
-    photo: p.photo,
-    thumb: p.thumb||p.photo,
-    price: p.price||''
-  }));
-  if(productsKey(list)===productsKey(state.products) && (state.ready||state.mode==='fallback')) return;
-  state.products = list;
+function setProducts(list){
+  const arr = (list||[]).filter(p => p && p.visible!==false && (p.photo||p.thumb));
+  const key = productKey(arr);
+  state.products = arr;
   if(state.mode==='fallback'){
-    buildFallback(list);
+    buildFallback(arr);
     return;
   }
-  if(state.ready && scene){
-    rebuildFrames(list);
+  if(state.ready && state.mode==='3d' && key === state.productKey) return;
+  state.productKey = key;
+  // If the scene already exists we keep it (first call during boot may be empty then filled).
+  // Rebuild only if 3D already booted with a different set.
+  if(state.ready && state.mode==='3d' && state.scene && key){
+    // Too late to cheaply rebuild mid-flight; boot already waited for products.
+    return;
   }
 }
 
 function openProductId(id){
-  const f = state.frames.find(fr => fr.userData.product && fr.userData.product.id===id);
-  if(f) openFrame(f);
+  const f = state.frames.find(fr => fr.product && fr.product.id===id);
+  if(f) startFlyTo(f);
   else {
     const p = state.products.find(x=>x.id===id);
     if(p) document.dispatchEvent(new CustomEvent('hall:open-product',{detail:{product:p, rect:null}}));
+  }
+}
+
+function closeProductFromHall(){
+  const {canvas} = getEls();
+  if(canvas) canvas.style.opacity = '1';
+  document.body.classList.remove('hall-flying');
+  state.flying = false;
+  state.fly = null;
+  // Stay at the same corridor spot (saved, or current).
+  if(typeof state.savedP === 'number'){
+    state.currentP = state.savedP;
+    state.targetP = state.savedP;
+    state.vel = 0;
+    applyPose(poseAt(state.savedP), 0);
+    if(state.renderer && state.scene && state.camera) state.renderer.render(state.scene, state.camera);
   }
 }
 
@@ -916,12 +1114,21 @@ window.PerfectHall = {
   mode: ()=>state.mode,
   debug: ()=>({
     n: state.frames.length,
-    names: state.frames.map(f=>f.userData.product?.name || (f.userData.isCta?'CTA':'?')),
-    angles: state.frames.map(f=>+f.userData.angle.toFixed(3)),
-    camA0: state.camA0, camA1: state.camA1,
-    p: state.currentP, target: state.targetP
+    names: state.frames.map(f=>f.isCta ? 'CTA' : (f.product?.name||'?')),
+    sides: state.frames.map(f=>f.side),
+    zs: state.frames.map(f=>+f.z.toFixed(2)),
+    p: state.currentP, target: state.targetP, vel: state.vel,
+    fps: +state.fps.toFixed(1), quality: state.quality, weak: state.weak
   }),
-  canvasOpacity(v){ const {canvas}=getEls(); if(canvas) canvas.style.opacity = String(v); }
+  canvasOpacity(v){ const {canvas}=getEls(); if(canvas) canvas.style.opacity = String(v); },
+  setProgress(p){
+    const v = clamp(+p||0, 0, 1);
+    state.currentP = state.targetP = v;
+    state.vel = 0;
+    syncScrollTo(v);
+    if(state.camera) applyPose(poseAt(v), 0);
+    if(state.renderer && state.scene && state.camera) state.renderer.render(state.scene, state.camera);
+  }
 };
 
 async function boot(){
@@ -936,13 +1143,16 @@ async function boot(){
     await new Promise(r=>setTimeout(r, 40));
   }
   if(!state.products.length && window.PR_PRODUCTS) setProducts(window.PR_PRODUCTS);
-  try{
-    await init3D();
-  }catch(err){
-    console.warn('Galerie 3D indisponible, bascule vers la galerie simple.', err);
+  const info = webglInfo();
+  if(!info.ok){
     buildFallback(state.products);
-    const {loader} = getEls();
-    if(loader) loader.hidden = true;
+    return;
+  }
+  try{
+    await init3D(state.products);
+  }catch(err){
+    console.warn('Galerie musée indisponible, bascule vers la galerie simple.', err);
+    buildFallback(state.products);
   }
 }
 
